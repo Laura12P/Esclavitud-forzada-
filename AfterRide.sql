@@ -139,32 +139,60 @@ CREATE TABLE Foto (
 );
 
 
------ CICLO 1: POBLAROK(01):
--- Carrera y recorrido Tablas
-INSERT INTO Punto VALUES (1,'Salida','Partida',0, TO_DATE('2025-03-04', 'YYYY-MM-DD');
-INSERT INTO Segmento VALUES ('Segmento3','Carrera','Meta');
-INSERT INTO PropiedadDe VALUES (40,2,'C02');
-INSERT INTO PropiedadDe VALUES (60,3,'C03');
+-- Carrera y recorrido
 
--- Ejecución Carreras Tablas
-INSERT INTO Verssion VALUES ('V1', TO_DATE ('2025-05-01', 'YYYY-MM-DD'), 'C01');
-INSERT INTO Organizacion VALUES ('Organizacion1', 4, 'Version1');
-INSERT INTO AgrupacionSegmento VALUES ('AgrupacionSegmento1', 'V1', 'Segmento1');
+INSERT INTO Punto VALUES (1,'Salida','Partida',0,TO_DATE('2025-03-04','YYYY-MM-DD'));
+INSERT INTO Punto VALUES (2,'Control','Control',50,TO_DATE('2025-03-04','YYYY-MM-DD'));
+INSERT INTO Punto VALUES (3,'Meta','Llegada',100,TO_DATE('2025-03-05','YYYY-MM-DD'));
 
--- Participantes Sistema Tablas
-INSERT INTO Participante VALUES (1,'CC', '1010', 'Africa', 'paquito@mail.com');
-INSERT INTO Persona VALUES (1, 'Samuel');
-INSERT INTO Ciclista VALUES(2, TO_DATE ('1995-02-10', 'YYYY-MM-DD'), 'Elite');
+INSERT INTO Carrera VALUES ('C01','Tour Andes','Colombia','Montaña','Anual');
+INSERT INTO Carrera VALUES ('C02','Ruta Caribe','Colombia','Ruta','Anual');
+INSERT INTO Carrera VALUES ('C03','Vuelta Bogota','Colombia','Urbana','Anual');
 
--- Encuestas y retroalimentacion Tablas
-INSERT INTO Encuesta VALUES (1, 'Fue evaluado correctamente', 1000000, '2000', TO_DATE('2025-03-04','YYYY-MM-DD'), TO_DATE('2025-04-05','YYYY-MM-DD'))
-INSERT INTO Evaluacion VALUES (1, TO_DATE('2025-05-05','YYYY-MM-DD'), 'Daniel Perez', 'Medias', 32, 'Sin palabras', 'Correcto', 1)
-INSERT INTO Comentario VALUES (1, NULL, 1)
+INSERT INTO Segmento VALUES ('Plano','S1','Salida');
+INSERT INTO Segmento VALUES ('Montaña','S2','Control');
+INSERT INTO Segmento VALUES ('Sprint','S3','Meta');
 
--- Registros y Fotos
-INSERT INTO Registros (1, TO_DATE('2025-04-05','YYYY-MM-DD'), 30, 2, NULL, 'Dificil', NULL, 'PrimeraC', 'SegmentoPrimero', 1)
-INSERT INTO Fotos (1, 1, NULL)
-INSERT INTO Registros (2, TO_DATE('2025-04-06','YYYY-MM-DD'), 900, 9, NULL, 'Facil', NULL, 'PrimeraCe', 'SegmentoPrimero', 2)
+
+-- Participantes
+
+INSERT INTO Participante VALUES (1,'CC','11111','Colombia','p1@mail.com');
+INSERT INTO Participante VALUES (2,'CC','22222','Colombia','p2@mail.com');
+INSERT INTO Participante VALUES (3,'CC','33333','Colombia','p3@mail.com');
+
+INSERT INTO Persona VALUES (1,'Juan Perez');
+INSERT INTO Persona VALUES (2,'Maria Lopez');
+INSERT INTO Persona VALUES (3,'Carlos Diaz');
+
+INSERT INTO Ciclista VALUES (1,TO_DATE('2000-01-01','YYYY-MM-DD'),'Elite');
+INSERT INTO Ciclista VALUES (2,TO_DATE('1999-02-02','YYYY-MM-DD'),'Elite');
+INSERT INTO Ciclista VALUES (3,TO_DATE('2002-03-03','YYYY-MM-DD'),'Sub23');
+
+
+-- Encuestas
+
+INSERT INTO Encuesta VALUES (1,'Organizacion',1000000,2000,TO_DATE('2025-03-01','YYYY-MM-DD'),TO_DATE('2025-04-01','YYYY-MM-DD'));
+INSERT INTO Encuesta VALUES (2,'Seguridad',2000000,3000,TO_DATE('2025-04-01','YYYY-MM-DD'),TO_DATE('2025-05-01','YYYY-MM-DD'));
+INSERT INTO Encuesta VALUES (3,'Logistica',1500000,2500,TO_DATE('2025-05-01','YYYY-MM-DD'),TO_DATE('2025-06-01','YYYY-MM-DD'));
+
+INSERT INTO Evaluacion VALUES (1,TO_DATE('2025-04-10','YYYY-MM-DD'),1,'Casco',5,'Muy bueno','Activo',1);
+INSERT INTO Evaluacion VALUES (2,TO_DATE('2025-04-11','YYYY-MM-DD'),2,'Bicicleta',4,'Buen estado','Activo',1);
+INSERT INTO Evaluacion VALUES (3,TO_DATE('2025-04-12','YYYY-MM-DD'),3,'Guantes',3,'Aceptable','Activo',2);
+
+INSERT INTO Comentario VALUES (1,'Buen evento',1);
+INSERT INTO Comentario VALUES (2,'Me gusto la organizacion',2);
+INSERT INTO Comentario VALUES (3,'Podria mejorar',3);
+
+
+-- Resultados
+
+INSERT INTO Registro VALUES (1,TO_DATE('2025-04-05','YYYY-MM-DD'),30,1,1,2,'Buen tiempo','V1','S1',1);
+INSERT INTO Registro VALUES (2,TO_DATE('2025-04-05','YYYY-MM-DD'),32,2,1,3,'Buen esfuerzo','V1','S2',2);
+INSERT INTO Registro VALUES (3,TO_DATE('2025-04-05','YYYY-MM-DD'),35,3,1,4,'Regular','V1','S3',3);
+
+INSERT INTO Foto VALUES (1,1,'Llegada ganador');
+INSERT INTO Foto VALUES (2,2,'Subida montaña');
+INSERT INTO Foto VALUES (3,3,'Meta final');
 
 
 
