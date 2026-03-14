@@ -155,3 +155,16 @@ INSERT INTO AgrupacionSegmento VALUES ('AgrupacionSegmento1', 'V1', 'Segmento1')
 INSERT INTO Participante VALUES (1,'CC', '1010', 'Africa', 'paquito@mail.com');
 INSERT INTO Persona VALUES (1, 'Samuel');
 INSERT INTO Ciclista VALUES(2, DATE '1995-02-10', 'Elite');
+
+-- Encuestas y retroalimentacion Tablas
+INSERT INTO Encuesta VALUES (1, 'Fue evaluado correctamente', 1000000, '2000', TO_DATE('2025-03-04','YYYY-MM-DD'), TO_DATE('2025-04-05','YYYY-MM-DD'))
+INSERT INTO Evaluacion VALUES (1, TO_DATE('2025-05-05','YYYY-MM-DD'), 'Daniel Perez', 'Medias', 32, 'Sin palabras', 'Correcto', 1)
+INSERT INTO Comentario VALUES (1, NULL, 1)
+
+-- Registros y Fotos
+INSERT INTO Registros (1, TO_DATE('2025-04-05','YYYY-MM-DD'), 30, 2, NULL, 'Dificil', NULL, 'PrimeraC', 'SegmentoPrimero', 1)
+INSERT INTO Fotos (1, 1, NULL)
+INSERT INTO Registros (1, TO_DATE('2025-04-05','YYYY-MM-DD'), 30, 2, NULL, 'Dificil', NULL, 'PrimeraC', 'SegmentoPrimero', 1)
+
+
+
