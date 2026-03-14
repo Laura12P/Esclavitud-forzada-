@@ -137,3 +137,6 @@ CREATE TABLE Foto (
     numeroRegistro NUMBER,
     descripcion VARCHAR2(200)
 );
+
+--EJEMPLO
+INSERT INTO Punto VALUES (1,'Salida','Partida',0,NULL);
