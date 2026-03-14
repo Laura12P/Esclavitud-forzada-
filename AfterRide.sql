@@ -140,9 +140,11 @@ CREATE TABLE Foto (
 
 
 ----- CICLO 1: POBLAROK(01):
+-- Carrera y recorrido Tablas
+INSERT INTO Punto VALUES (1,'Salida','Partida',0,"2025-03-04");
+INSERT INTO Segmento VALUES ('Segmento3','Carrera','Meta');
+INSERT INTO PropiedadDe VALUES (40,2,'C02');
+INSERT INTO PropiedadDe VALUES (60,3,'C03');
 
-
-INSERT INTO Participantes VALUES (
-
---EJEMPLO
-INSERT INTO Punto VALUES (1,'Salida','Partida',0,NULL);
+-- Ejecución Carreras Tablas
+INSERT INTO Carrera Values (
