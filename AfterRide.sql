@@ -147,4 +147,4 @@ INSERT INTO PropiedadDe VALUES (40,2,'C02');
 INSERT INTO PropiedadDe VALUES (60,3,'C03');
 
 -- Ejecución Carreras Tablas
-INSERT INTO Carrera Values (
+INSERT INTO Carrera Values (sdadasda
