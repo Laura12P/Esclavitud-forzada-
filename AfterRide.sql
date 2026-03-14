@@ -147,4 +147,11 @@ INSERT INTO PropiedadDe VALUES (40,2,'C02');
 INSERT INTO PropiedadDe VALUES (60,3,'C03');
 
 -- Ejecución Carreras Tablas
-INSERT INTO Carrera Values (sdadasda
+INSERT INTO Verssion VALUES ('V1', DATE '2025-05-01', 'C01');
+INSERT INTO Organizacion VALUES ('Organizacion1', 4, 'Version1');
+INSERT INTO AgrupacionSegmento VALUES ('AgrupacionSegmento1', 'V1', 'Segmento1');
+
+-- Participantes Sistema Tablas
+INSERT INTO Participante VALUES (1,'CC', '1010', 'Africa', 'paquito@mail.com');
+INSERT INTO Persona VALUES (1, 'Samuel');
+INSERT INTO Ciclista VALUES(2, DATE '1995-02-10', 'Elite');
