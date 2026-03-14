@@ -164,7 +164,7 @@ INSERT INTO Comentario VALUES (1, NULL, 1)
 -- Registros y Fotos
 INSERT INTO Registros (1, TO_DATE('2025-04-05','YYYY-MM-DD'), 30, 2, NULL, 'Dificil', NULL, 'PrimeraC', 'SegmentoPrimero', 1)
 INSERT INTO Fotos (1, 1, NULL)
-INSERT INTO Registros (1, TO_DATE('2025-04-05','YYYY-MM-DD'), 30, 2, NULL, 'Dificil', NULL, 'PrimeraC', 'SegmentoPrimero', 1)
+INSERT INTO Registros (2, TO_DATE('2025-04-06','YYYY-MM-DD'), 900, 9, NULL, 'Facil', NULL, 'PrimeraCe', 'SegmentoPrimero', 2)
 
 
 
