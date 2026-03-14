@@ -90,6 +90,7 @@ CREATE TABLE Empresa (
     razonSocial VARCHAR2(30) NOT NULL
 );
 
+-- Encuestas y retroalimentacion Tablas
 CREATE TABLE Encuesta (
     idEncuesta NUMBER PRIMARY KEY,
     criterioEvaluado VARCHAR2(50) NOT NULL,
@@ -109,7 +110,6 @@ CREATE TABLE Evaluacion(
     estado VARCHAR2(20),
     idEncuesta NUMBER
 );
--- Encuestas y retroalimentacion Tablas
 
 CREATE TABLE Comentario (
     id NUMBER PRIMARY KEY,
