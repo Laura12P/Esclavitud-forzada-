@@ -141,20 +141,20 @@ CREATE TABLE Foto (
 
 ----- CICLO 1: POBLAROK(01):
 -- Carrera y recorrido Tablas
-INSERT INTO Punto VALUES (1,'Salida','Partida',0,"2025-03-04");
+INSERT INTO Punto VALUES (1,'Salida','Partida',0, TO_DATE('2025-03-04', 'YYYY-MM-DD');
 INSERT INTO Segmento VALUES ('Segmento3','Carrera','Meta');
 INSERT INTO PropiedadDe VALUES (40,2,'C02');
 INSERT INTO PropiedadDe VALUES (60,3,'C03');
 
 -- Ejecución Carreras Tablas
-INSERT INTO Verssion VALUES ('V1', DATE '2025-05-01', 'C01');
+INSERT INTO Verssion VALUES ('V1', TO_DATE ('2025-05-01', 'YYYY-MM-DD'), 'C01');
 INSERT INTO Organizacion VALUES ('Organizacion1', 4, 'Version1');
 INSERT INTO AgrupacionSegmento VALUES ('AgrupacionSegmento1', 'V1', 'Segmento1');
 
 -- Participantes Sistema Tablas
 INSERT INTO Participante VALUES (1,'CC', '1010', 'Africa', 'paquito@mail.com');
 INSERT INTO Persona VALUES (1, 'Samuel');
-INSERT INTO Ciclista VALUES(2, DATE '1995-02-10', 'Elite');
+INSERT INTO Ciclista VALUES(2, TO_DATE ('1995-02-10', 'YYYY-MM-DD'), 'Elite');
 
 -- Encuestas y retroalimentacion Tablas
 INSERT INTO Encuesta VALUES (1, 'Fue evaluado correctamente', 1000000, '2000', TO_DATE('2025-03-04','YYYY-MM-DD'), TO_DATE('2025-04-05','YYYY-MM-DD'))
