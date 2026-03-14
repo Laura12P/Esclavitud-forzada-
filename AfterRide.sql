@@ -1,4 +1,4 @@
------ CICLO 1: TABLAS
+----- CICLO 1: TABLAS.
 
 -- Carrera y recorrido Tablas
 CREATE TABLE Punto (
