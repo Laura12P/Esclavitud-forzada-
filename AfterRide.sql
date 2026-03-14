@@ -52,12 +52,12 @@ CREATE TABLE AgrupacionSegmento(
     PRIMARY KEY (nombreVersion, nombreSegmento)
 );
 
-CREATE TABLE Verssion(
+CREATE TABLE Version(
     nombre VARCHAR2(5) PRIMARY KEY,
     fecha DATE NOT NULL,
     codigoCarrera VARCHAR2(20)
 );
--- Participantes del sistema Tablas 
+--*** Participantes del sistema Tablas 
 CREATE TABLE Participante (
     id NUMBER PRIMARY KEY,
     idt VARCHAR2(20) NOT NULL,
@@ -137,6 +137,9 @@ CREATE TABLE Foto (
     numeroRegistro NUMBER,
     descripcion VARCHAR2(200)
 );
+
+
+----- CICLO 1: POBLAROK(01):
 
 --EJEMPLO
 INSERT INTO Punto VALUES (1,'Salida','Partida',0,NULL);
