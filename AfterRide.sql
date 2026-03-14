@@ -6,7 +6,7 @@ CREATE TABLE Punto (
     nombre VARCHAR2(10) PRIMARY KEY,
     tipo VARCHAR2(20) NOT NULL,
     distancia NUMBER(8,2) NOT NULL,
-    tiempoLimite DATE
+    tiempoLimite DATE NOT NULL
 );
 
 CREATE TABLE Carrera (
@@ -18,37 +18,37 @@ CREATE TABLE Carrera (
 );
 
 CREATE TABLE Segmento (
-    tipo VARCHAR2(20),
+    tipo VARCHAR2(20) NOT NULL, 
     nombre VARCHAR2(10) PRIMARY KEY,
-    nombrePunto VARCHAR2(20)
+    nombrePunto VARCHAR2(20) NOT NULL
 );
 
 CREATE TABLE PropiedadDe (
-    porcentaje NUMBER (1,100),
-    idParticipante NUMBER,
-    codigoCarrera VARCHAR2(20),
+    porcentaje NUMBER (1,100) NOT NULL, 
+    idParticipante NUMBER NOT NULL, 
+    codigoCarrera VARCHAR2(20) NOT NULL,
     PRIMARY KEY (idParticipante, codigoCarrera)
 );
 -- Ejecución Carreras Tablas
 
 CREATE TABLE Organizacion (
-    versionOrganizacion VARCHAR2(30),
-    idParticipante NUMBER,
-    nombreVersion VARCHAR2(30),
+    versionOrganizacion VARCHAR2(30) NOT NULL,
+    idParticipante NUMBER NOT NULL,
+    nombreVersion VARCHAR2(30) NOT NULL,
     PRIMARY KEY (idParticipante, nombreVersion)
 );
 
 CREATE TABLE Participacion (
-    idParticipante NUMBER,
-    nombreVersion VARCHAR2(30),
-    versionParticipacion VARCHAR2(30),
+    idParticipante NUMBER NOT NULL,
+    nombreVersion VARCHAR2(30) NOT NULL,
+    versionParticipacion VARCHAR2(30) NOT NULL,
     PRIMARY KEY (idParticipante, nombreVersion)
 );
 
 CREATE TABLE AgrupacionSegmento(
-    versionSegmento VARCHAR2(30),
-    nombreVersion VARCHAR(20),
-    nombreSegmento VARCHAR(30),
+    versionSegmento VARCHAR2(30) NOT NULL,
+    nombreVersion VARCHAR(20) NOT NULL,
+    nombreSegmento VARCHAR(30) NOT NULL,
     PRIMARY KEY (nombreVersion, nombreSegmento)
 );
 
@@ -74,14 +74,14 @@ CREATE TABLE Persona (
 CREATE TABLE Ciclista (
     idParticipante NUMBER PRIMARY KEY,
     nacimiento DATE NOT NULL,
-    categoria VARCHAR2(20)
+    categoria VARCHAR2(20) NOT NULL
 );
 
 CREATE TABLE ParticipacionEncuesta(
-    idParcipante  NUMBER,
-    idEncuesta NUMBER,
-    fechaRepuesta DATE,
-    estado VARCHAR2(20),
+    idParcipante  NUMBER NOT NULL,
+    idEncuesta NUMBER NOT NULL,
+    fechaRepuesta DATE NOT NULL,
+    estado VARCHAR2(20) NOT NULL,
     PRIMARY KEY (idParcipante, idEncuesta)
 );
 
@@ -103,43 +103,46 @@ CREATE TABLE Encuesta (
 CREATE TABLE Evaluacion(
     id NUMBER PRIMARY KEY,
     Fecha DATE NOT NULL,
-    ReferenciaAutor NUMBER,
-    bienEspecifico VARCHAR2(50),
-    puntuacion NUMBER(1,5),
-    comentarios VARCHAR2(500),
-    estado VARCHAR2(20),
-    idEncuesta NUMBER
+    ReferenciaAutor NUMBER NOT NULL,
+    bienEspecifico VARCHAR2(50) NOT NULL,
+    puntuacion NUMBER(1,5) NOT NULL,
+    comentarios VARCHAR2(500) NOT NULL,
+    estado VARCHAR2(20) NOT NULL,
+    idEncuesta NUMBER NOT NULL
 );
 
 CREATE TABLE Comentario (
     id NUMBER PRIMARY KEY,
-    contenido VARCHAR2(500),
-    idEvaluacion NUMBER
+    contenido VARCHAR2(500) NOT NULL,
+    idEvaluacion NUMBER NOT NULL
 );
 
 -- Resultados Tablas
 
 CREATE TABLE Registro (
     numero NUMBER PRIMARY KEY,
-    fecha DATE,
-    tiempo NUMBER,
-    posicion NUMBER,
-    revision NUMBER,
-    dificultad NUMBER,
-    comentarios VARCHAR2(500),
-    nombreVersion VARCHAR2(20),
-    nombreSegmento VARCHAR2(30),
-    idParticipante NUMBER
+    fecha DATE NOT NULL,
+    tiempo NUMBER NOT NULL,
+    posicion NUMBER NOT NULL,
+    revision NUMBER NOT NULL,
+    dificultad NUMBER NOT NULL,
+    comentarios VARCHAR2(500) ,
+    nombreVersion VARCHAR2(20) NOT NULL,
+    nombreSegmento VARCHAR2(30) NOT NULL,
+    idParticipante NUMBER NOT NULL
 );
 
 CREATE TABLE Foto (
     idFoto NUMBER PRIMARY KEY,
-    numeroRegistro NUMBER,
+    numeroRegistro NUMBER NOT NULL,
     descripcion VARCHAR2(200)
 );
 
 
 ----- CICLO 1: POBLAROK(01):
+
+
+INSERT INTO Participantes VALUES (
 
 --EJEMPLO
 INSERT INTO Punto VALUES (1,'Salida','Partida',0,NULL);
