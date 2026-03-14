@@ -139,4 +139,4 @@ CREATE TABLE Foto (
 );
 
 --EJEMPLO
-INSERT INTO Punto VALUES (1,'Salida','Partida',0,NULL);
+INSERT INTO Punto VALUES (1,'Salida','Partida',0, '2026-01-03');
