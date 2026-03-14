@@ -1,4 +1,4 @@
--- Carrera Tablas
+-- Carrera y recorrido Tablas
 CREATE TABLE Punto (
     orden NUMBER(2)  NOT NULL,
     nombre VARCHAR2(10) PRIMARY KEY,
@@ -27,6 +27,7 @@ CREATE TABLE PropiedadDe (
     codigoCarrera VARCHAR2(20),
     PRIMARY KEY (idParticipante, codigoCarrera)
 );
+-- Ejecución Carreras Tablas
 
 CREATE TABLE Organizacion (
     versionOrganizacion VARCHAR2(30),
@@ -54,7 +55,7 @@ CREATE TABLE Verssion(
     fecha DATE NOT NULL,
     codigoCarrera VARCHAR2(20)
 );
--- Participante Tablas 
+-- Participantes del sistema Tablas 
 CREATE TABLE Participante (
     id NUMBER PRIMARY KEY,
     idt VARCHAR2(20) NOT NULL,
@@ -106,12 +107,15 @@ CREATE TABLE Evaluacion(
     estado VARCHAR2(20),
     idEncuesta NUMBER
 );
+-- Encuestas y retroalimentacion Tablas
 
 CREATE TABLE Comentario (
     id NUMBER PRIMARY KEY,
     contenido VARCHAR2(500),
     idEvaluacion NUMBER
 );
+
+-- Resultados Tablas
 
 CREATE TABLE Registro (
     numero NUMBER PRIMARY KEY,
