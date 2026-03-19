@@ -138,3 +138,152 @@ SELECT * FROM TRoom;
 
 CASO 3 (sin CASCADE): Intentar borrar un tipo inexistente, no deberia ocurrir nada, Oracle no genera error
 DELETE FROM TRoomType WHERE room_type_id = 99;
+
+
+
+-- ============================================================
+-- C. DISPARADORES
+-- ============================================================
+
+-- ============================================================
+-- Disparadores: Creación
+-- ============================================================
+
+-- TR_ROOM_BI: Disparador BEFORE INSERT sobre TRoom
+-- Automatiza: si max_occupacy es NULL, asigna el MAX(occupancy) de TRate para ese tipo
+-- Restringe: no permite insertar si el tipo de habitación no tiene precios en TRate
+CREATE OR REPLACE TRIGGER TR_ROOM_BI
+BEFORE INSERT ON TRoom
+FOR EACH ROW
+DECLARE
+    v_count        NUMBER;
+    v_max_occupacy TRate.occupancy%TYPE;
+BEGIN
+    -- Verificar que el tipo de habitación tiene precios asignados
+    SELECT COUNT(*)
+      INTO v_count
+      FROM TRate
+     WHERE room_type_id = :NEW.room_type_id;
+
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'No se puede crear la habitación: el tipo de habitación no tiene precios asignados.'
+        );
+    END IF;
+
+    -- Si no se indicó max_occupacy, se asigna la ocupación máxima definida en TRate
+    IF :NEW.max_occupacy IS NULL THEN
+        SELECT MAX(occupancy)
+          INTO v_max_occupacy
+          FROM TRate
+         WHERE room_type_id = :NEW.room_type_id;
+
+        :NEW.max_occupacy := v_max_occupacy;
+    END IF;
+END TR_ROOM_BI;
+/
+
+-- TR_ROOM_BU: Disparador BEFORE UPDATE sobre TRoom
+-- Restringe: solo se puede modificar max_occupacy, y únicamente puede aumentar
+CREATE OR REPLACE TRIGGER TR_ROOM_BU
+BEFORE UPDATE ON TRoom
+FOR EACH ROW
+BEGIN
+    -- Solo max_occupacy puede cambiar; room_id no debe modificarse
+    IF :NEW.room_id != :OLD.room_id THEN
+        RAISE_APPLICATION_ERROR(
+            -20002,
+            'No se permite modificar el identificador de la habitación (room_id).'
+        );
+    END IF;
+
+    -- room_type_id no debe modificarse
+    IF :NEW.room_type_id != :OLD.room_type_id THEN
+        RAISE_APPLICATION_ERROR(
+            -20003,
+            'No se permite modificar el tipo de habitación (room_type_id).'
+        );
+    END IF;
+
+    -- max_occupacy únicamente puede aumentar (no se permite igual ni menor)
+    IF :NEW.max_occupacy <= :OLD.max_occupacy THEN
+        RAISE_APPLICATION_ERROR(
+            -20004,
+            'La máxima ocupación solo puede aumentar. Valor nuevo debe ser mayor al actual (' 
+            || :OLD.max_occupacy || ').'
+        );
+    END IF;
+END TR_ROOM_BU;
+/
+
+
+-- ============================================================
+-- XDisparadores: Eliminación de disparadores
+-- ============================================================
+DROP TRIGGER TR_ROOM_BI;
+DROP TRIGGER TR_ROOM_BU;
+
+
+-- ============================================================
+-- Preparación del entorno para pruebas de disparadores
+-- ============================================================
+DELETE FROM TRoom;
+DELETE FROM TRate;
+DELETE FROM TRoomType;
+
+INSERT INTO TRoomType VALUES (1, 'STD', 'Habitación estándar');
+INSERT INTO TRoomType VALUES (2, 'DLX', 'Habitación deluxe');
+INSERT INTO TRoomType VALUES (3, 'SUI', 'Suite sin precios'); -- tipo sin precios, para prueba
+
+INSERT INTO TRate VALUES (1, 1, 50.00);
+INSERT INTO TRate VALUES (1, 2, 80.00);
+INSERT INTO TRate VALUES (1, 4, 120.00); -- máximo ocupancy para tipo 1 = 4
+INSERT INTO TRate VALUES (2, 1, 100.00);
+INSERT INTO TRate VALUES (2, 3, 180.00); -- máximo occupancy para tipo 2 = 3
+COMMIT;
+
+
+-- ============================================================
+-- DisparadoresOK: 3 casos que SÍ deben funcionar
+-- ============================================================
+
+-- CASO OK 1: Insertar habitación indicando max_occupacy explícitamente
+-- El disparador no modifica nada, solo verifica que TRate tiene precios para tipo 1
+INSERT INTO TRoom VALUES (301, 1, 2);
+-- Resultado esperado: se inserta con max_occupacy = 2
+SELECT * FROM TRoom WHERE room_id = 301;
+
+-- CASO OK 2: Insertar habitación SIN indicar max_occupacy (NULL)
+-- El disparador TR_ROOM_BI asigna automáticamente MAX(occupancy) de TRate para tipo 1 = 4
+INSERT INTO TRoom VALUES (302, 1, NULL);
+-- Resultado esperado: se inserta con max_occupacy = 4 (asignada automáticamente)
+SELECT * FROM TRoom WHERE room_id = 302;
+
+-- CASO OK 3: Actualizar max_occupacy aumentando el valor (de 2 a 5)
+-- TR_ROOM_BU permite el cambio porque el nuevo valor es mayor
+UPDATE TRoom SET max_occupacy = 5 WHERE room_id = 301;
+-- Resultado esperado: max_occupacy actualizado a 5
+SELECT * FROM TRoom WHERE room_id = 301;
+COMMIT;
+
+
+-- ============================================================
+-- DisparadoresNoOK: 3 casos que NO deben funcionar
+-- ============================================================
+
+-- CASO NO OK 1: Insertar habitación de un tipo SIN precios en TRate (tipo 3 = 'SUI')
+-- TR_ROOM_BI debe lanzar error -20001
+INSERT INTO TRoom VALUES (401, 3, 2);
+-- Resultado esperado: ORA-20001 - No se puede crear la habitación: el tipo no tiene precios
+
+-- CASO NO OK 2: Intentar disminuir max_occupacy (de 5 a 3)
+-- TR_ROOM_BU debe lanzar error -20004 porque el nuevo valor es menor al actual
+UPDATE TRoom SET max_occupacy = 3 WHERE room_id = 301;
+-- Resultado esperado: ORA-20004 - La máxima ocupación solo puede aumentar
+
+-- CASO NO OK 3: Intentar cambiar el room_type_id de una habitación existente
+-- TR_ROOM_BU debe lanzar error -20003 porque room_type_id no se puede modificar
+UPDATE TRoom SET room_type_id = 2 WHERE room_id = 301;
+-- Resultado esperado: ORA-20003 - No se permite modificar el tipo de habitación
+ROLLBACK;
