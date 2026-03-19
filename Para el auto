@@ -121,3 +121,20 @@ INSERT INTO TRoom VALUES (102, 1, 1);  -- tipo STD
 INSERT INTO TRoom VALUES (201, 2, 3);  -- tipo DLX
 INSERT INTO TRoom VALUES (202, 2, 4);  -- tipo DLX
 COMMIT;
+
+SELECT * FROM TRoom;
+
+-- CASO 1: Borrar el tipo STD (room_type_id=1)
+-- Resultado esperado: las habitaciones 101 y 102 se eliminan automáticamente por CASCADE
+DELETE FROM TRoomType WHERE room_type_id = 1;
+COMMIT;
+SELECT * FROM TRoom;
+
+-- CASO 2: Borrar el tipo DLX (room_type_id=2)
+-- Resultado esperado: las habitaciones 201 y 202 se eliminan automáticamente por CASCADE
+DELETE FROM TRoomType WHERE room_type_id = 2;
+COMMIT;
+SELECT * FROM TRoom;
+
+CASO 3 (sin CASCADE): Intentar borrar un tipo inexistente, no deberia ocurrir nada, Oracle no genera error
+DELETE FROM TRoomType WHERE room_type_id = 99;
