@@ -70,7 +70,7 @@ INSERT INTO TRate VALUES (2, 2, 150.00);
 INSERT INTO TRate VALUES (2, 4, 200.00);
 COMMIT;
 
--- ATRIBUTOSOK: Inserciones que SÍ deben funcionar
+-- ATRIBUTOSOK: id valido, max_occupacy valida
 INSERT INTO TRoom VALUES (301, 1, 3); --id no es multiplo de 100, occupacy >=1
 INSERT INTO TRoom VALUES (999, 1, 5); --id en limite superior válido
 INSERT INTO TRoom VALUES (201, 2, 4); -- piso 2, max_occupacy=4 sin restricción de piso
