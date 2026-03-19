@@ -77,3 +77,8 @@ INSERT INTO TRoom VALUES (201, 2, 4); -- piso 2, max_occupacy=4 sin restricción
 INSERT INTO TRoom VALUES (101, 1, 1); -- piso 1, occupacy = 1
 INSERT INTO TRoom VALUES (102, 1, 2); -- piso 1, ocuppacy = 2
 COMMIT;
+--AtributosNoOK
+INSERT INTO TRoom VALUES (200, 1, 2); -- FALLA: room_id=200 es múltiplo de 100 no cumple con la restricción CK_ROOM_ID
+INSERT INTO TRoom VALUES (50, 1, 2); -- FALLA: room_id=50 es menor que 101 no cumple con CK_ROOM_ID
+INSERT INTO TRoom VALUES (401, 1, 0); -- FALLA: max_occupacy=0 no cumple con la restricción de CK_ROOM_MAX_OCCUPACY
+INSERT INTO TRoom VALUES (402, 1, -5); -- FALLA: max_occupacy=-5 no cumple con CK_ROOM_MAX_OCCUPACY
