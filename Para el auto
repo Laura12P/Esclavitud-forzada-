@@ -6,3 +6,11 @@ CREATE TABLE TRoom(
   room_type_id NUMBER(11),
   max_occupacy NUMBER(11)
 );
+-- Clave Primaria
+ALTER TABLE TRoom 
+ADD CONSTRAINT PK_ROOM PRIMARY KEY (room_id);
+
+-- Clave Foránea 
+ALTER TABLE TRoom 
+ADD CONSTRAINT FK_ROOM_ROOM_TYPE FOREIGN KEY (room_type_id) 
+REFERENCES TRoomType(room_type_id); -- Asumiendo que existe la tabla TRoomType
