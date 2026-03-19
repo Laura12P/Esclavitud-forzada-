@@ -1,1 +1,8 @@
 -- Adicionando restricciones declarativas --
+-- Para proteger la base de datos vamos a implementar las restricciones que se pueden garantizar usando restricciones declarativas.--
+- Crear la nueva tabla -
+CREATE TABLE TRoom(
+  room_id NUMBER (3),
+  room_type_id NUMBER(11),
+  max_occupacy NUMBER(11)
+);
