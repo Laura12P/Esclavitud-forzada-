@@ -82,3 +82,12 @@ INSERT INTO TRoom VALUES (200, 1, 2); -- FALLA: room_id=200 es múltiplo de 100 
 INSERT INTO TRoom VALUES (50, 1, 2); -- FALLA: room_id=50 es menor que 101 no cumple con CK_ROOM_ID
 INSERT INTO TRoom VALUES (401, 1, 0); -- FALLA: max_occupacy=0 no cumple con la restricción de CK_ROOM_MAX_OCCUPACY
 INSERT INTO TRoom VALUES (402, 1, -5); -- FALLA: max_occupacy=-5 no cumple con CK_ROOM_MAX_OCCUPACY
+-- TuplasOK
+INSERT INTO TRoom VALUES (105, 1, 2); -- OK: piso 1 con exactamente 2 ocupantes (límite)
+-- OK: piso 2 en adelante sin restricción de ocupación
+INSERT INTO TRoom VALUES (205, 1, 6);
+INSERT INTO TRoom VALUES (901, 1, 10);
+-- TuplasNoOK
+INSERT INTO TRoom VALUES (110, 1, 3); -- FALLA: piso 1 con 3 ocupantes no cumple CK_ROOM_ID_MAX_OCCUPACY
+INSERT INTO TRoom VALUES (115, 1, 5) ;-- FALLA: piso 1 con 5 ocupantes no cumple CK_ROOM_ID_MAX_OCCUPACY
+INSERT INTO TRoom VALUES (310, 9999, 2); -- FALLA: room_type_id no existe en TRoomType no cumple FK_ROOM_ROOM_TYPE
