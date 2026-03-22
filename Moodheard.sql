@@ -179,152 +179,152 @@ CREATE TABLE FiltroBusqueda (
 -- SECCIÓN 2: ATRIBUTOS
 -- Canción
 ALTER TABLE Cancion
-    ADD CONSTRANUMBER fk_Cancion_Artista       
+    ADD CONSTRAINT fk_Cancion_Artista       
     FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
 ALTER TABLE Cancion_Genero
-    ADD CONSTRANUMBER fk_CG_Cancion 
+    ADD CONSTRAINT fk_CG_Cancion 
     FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Cancion_Genero
-    ADD CONSTRANUMBER fk_CG_Genero             
+    ADD CONSTRAINT fk_CG_Genero             
     FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
 
 -- Usuario
 ALTER TABLE UsuarioBasico
-    ADD CONSTRANUMBER fk_UsuarioBasico 
+    ADD CONSTRAINT fk_UsuarioBasico 
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE UsuarioMembresia
-    ADD CONSTRANUMBER fk_UsuarioMembresia      
+    ADD CONSTRAINT fk_UsuarioMembresia      
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 -- Huella Musical
 ALTER TABLE Publicacion
-    ADD CONSTRANUMBER fk_Publicacion_Usuario   
+    ADD CONSTRAINT fk_Publicacion_Usuario   
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Publicacion
-    ADD CONSTRANUMBER fk_Publicacion_Cancion   
+    ADD CONSTRAINT fk_Publicacion_Cancion   
     FOREIGN KEY (idCancionAdjunta) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Historial_Musical
-    ADD CONSTRANUMBER fk_HM_Cancion            
+    ADD CONSTRAINT fk_HM_Cancion            
     FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Historial_Musical
-    ADD CONSTRANUMBER fk_HM_Usuario            
+    ADD CONSTRAINT fk_HM_Usuario            
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 -- Recomendación
 ALTER TABLE Recomendacion
-    ADD CONSTRANUMBER fk_Reco_Usuario 
+    ADD CONSTRAINT fk_Reco_Usuario 
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Recomendacion
-    ADD CONSTRANUMBER fk_Reco_Cancion          
+    ADD CONSTRAINT fk_Reco_Cancion          
     FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Recomendacion
-    ADD CONSTRANUMBER fk_Reco_Comunidad        
+    ADD CONSTRAINT fk_Reco_Comunidad        
     FOREIGN KEY (idComunidad) REFERENCES Comunidad(idComunidad);
 
 -- Configuración & Privacidad
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRANUMBER fk_Config_Usuario        
+    ADD CONSTRAINT fk_Config_Usuario        
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE ListaNegra
-    ADD CONSTRANUMBER fk_LN_Origen             
+    ADD CONSTRAINT fk_LN_Origen             
     FOREIGN KEY (idUsuarioOrigen) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE ListaNegra
-    ADD CONSTRANUMBER fk_LN_Destino  
+    ADD CONSTRAINT fk_LN_Destino  
     FOREIGN KEY (idUsuarioDestino) REFERENCES Usuario(idUsuario);
 
 -- Moderación & Reporte
 ALTER TABLE Reporte
-    ADD CONSTRANUMBER fk_Reporte_Reportante    
+    ADD CONSTRAINT fk_Reporte_Reportante    
     FOREIGN KEY (idUsuarioReportante) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Reporte
-    ADD CONSTRANUMBER fk_Reporte_Reportado     
+    ADD CONSTRAINT fk_Reporte_Reportado     
     FOREIGN KEY (idUsuarioReportado) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Sancion
-    ADD CONSTRANUMBER fk_Sancion_Reporte       
+    ADD CONSTRAINT fk_Sancion_Reporte       
     FOREIGN KEY (idReporte) REFERENCES Reporte(idReporte);
 
 ALTER TABLE Sancion
-    ADD CONSTRANUMBER fk_Sancion_Usuario       
+    ADD CONSTRAINT fk_Sancion_Usuario       
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 -- Búsqueda & Descubrimiento
 ALTER TABLE HistorialBusqueda
-    ADD CONSTRANUMBER fk_HB_Usuario            
+    ADD CONSTRAINT fk_HB_Usuario            
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRANUMBER fk_FB_Usuario            
+    ADD CONSTRAINT fk_FB_Usuario            
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRANUMBER fk_FB_Genero             
+    ADD CONSTRAINT fk_FB_Genero             
     FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRANUMBER fk_FB_Artista            
+    ADD CONSTRAINT fk_FB_Artista            
     FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRANUMBER fk_FB_Historial 
+    ADD CONSTRAINT fk_FB_Historial 
     FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRANUMBER fk_FB_Busqueda          
+    ADD CONSTRAINT fk_FB_Busqueda          
     FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
 
 --- # RESTRICCIONES DECLARATIVAS
 -- Usuario
 ALTER TABLE Usuario
-    ADD CONSTRANUMBER ck_Usuario_streaming     
+    ADD CONSTRAINT ck_Usuario_streaming     
     CHECK (plataformaStreaming IN ('spotify', 'apple_music', 'youtube_music', 'deezer', 'tidal'));
 
 -- Publicacion
 ALTER TABLE Publicacion
-    ADD CONSTRANUMBER ck_Publicacion_tipo      
+    ADD CONSTRAINT ck_Publicacion_tipo      
     CHECK (tipoContenido IN ('cancion', 'album', 'artista', 'playlist'));
 
 -- Recomendacion
 ALTER TABLE Recomendacion
-    ADD CONSTRANUMBER ck_Recomendacion_tipo    
+    ADD CONSTRAINT ck_Recomendacion_tipo    
     CHECK (tipoRecomendacion IN ('directa', 'comunidad', 'publica'));
 
 -- ConfiguracionUsuario
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRANUMBER ck_Config_seguir         
+    ADD CONSTRAINT ck_Config_seguir         
     CHECK (quienPuedeSeguir IN ('todos', 'seguidores', 'nadie'));
 
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRANUMBER ck_Config_historial      
+    ADD CONSTRAINT ck_Config_historial      
     CHECK (quienVeHistorial IN ('todos', 'seguidores', 'nadie'));
 
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRANUMBER ck_Config_publicaciones  
+    ADD CONSTRAINT ck_Config_publicaciones  
     CHECK (quienVePublicaciones IN ('todos', 'seguidores', 'nadie'));
 
 -- Reporte
 ALTER TABLE Reporte
-    ADD CONSTRANUMBER ck_Reporte_motivo        
+    ADD CONSTRAINT ck_Reporte_motivo        
     CHECK (motivoReporte IN ('spam', 'contenido_inapropiado', 'acoso', 'derechos_autor', 'otro'));
 
 ALTER TABLE Reporte
-    ADD CONSTRANUMBER ck_Reporte_estado 
+    ADD CONSTRAINT ck_Reporte_estado 
     CHECK (estadoReporte IN ('pendiente', 'revisado', 'resuelto', 'descartado'));
 
 -- Sancion
 ALTER TABLE Sancion
-    ADD CONSTRANUMBER ck_Sancion_tipo          
+    ADD CONSTRAINT ck_Sancion_tipo          
     CHECK (tipoSancion IN ('advertencia', 'suspension_temporal', 'ban_permanente'));
 
 
