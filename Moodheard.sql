@@ -105,8 +105,6 @@ CREATE TABLE Publicacion_TipoContenido (
 CREATE TABLE Historial_Musical (
     idRegistro          NUMBER(10)      PRIMARY KEY,
     fechaRegistro       DATE            NOT NULL,
-    periodoInicio       DATE            NOT NULL,
-    periodoFin          DATE            NULL,
     notaPersonal        VARCHAR(255)    NULL,
     emocion             VARCHAR(10)     NOT NULL,
     idCancion           NUMBER(10)      NOT NULL,
