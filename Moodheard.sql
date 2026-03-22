@@ -199,7 +199,6 @@ CREATE TABLE FiltroBusqueda (
     idFiltro            NUMBER(10)      PRIMARY KEY,
     fechaUso            DATE            NOT NULL,
     exito               NUMBER(1)       NOT NULL,
-    ipOrigen            VARCHAR2(45)    NOT NULL,
     periodo             DATE            NULL,
     idUsuario           NUMBER(10)      NOT NULL,
     idGenero            NUMBER(10)      NULL,
