@@ -6,20 +6,16 @@ DROP TABLE Sancion;
 DROP TABLE Reporte;
 DROP TABLE ListaNegra;
 DROP TABLE ConfiguracionUsuario;
-DROP TABLE Notificacion;
 DROP TABLE Recomendacion;
 DROP TABLE Historial_Musical;
 DROP TABLE Publicacion;
 DROP TABLE UsuarioBasico;
 DROP TABLE UsuarioMembresia;
 DROP TABLE Usuario;
-DROP TABLE Cancion_Genero;
 DROP TABLE Cancion;
 DROP TABLE Artista;
 DROP TABLE Genero;
-DROP TABLE Comunidad;
-DROP TABLE Pago;
-DROP TABLE Membresia;
+
 
 -- SECCIÓN 1: TABLAS
 
@@ -182,14 +178,6 @@ ALTER TABLE Cancion
     ADD CONSTRAINT fk_Cancion_Artista       
     FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
-ALTER TABLE Cancion_Genero
-    ADD CONSTRAINT fk_CG_Cancion 
-    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
-
-ALTER TABLE Cancion_Genero
-    ADD CONSTRAINT fk_CG_Genero             
-    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
-
 -- Usuario
 ALTER TABLE UsuarioBasico
     ADD CONSTRAINT fk_UsuarioBasico 
@@ -224,10 +212,6 @@ ALTER TABLE Recomendacion
 ALTER TABLE Recomendacion
     ADD CONSTRAINT fk_Reco_Cancion          
     FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
-
-ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Comunidad        
-    FOREIGN KEY (idComunidad) REFERENCES Comunidad(idComunidad);
 
 -- Configuración & Privacidad
 ALTER TABLE ConfiguracionUsuario
