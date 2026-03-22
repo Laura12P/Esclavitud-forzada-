@@ -7,6 +7,8 @@ DROP TABLE Reporte;
 DROP TABLE ListaNegra;
 DROP TABLE ConfiguracionUsuario;
 DROP TABLE Recomendacion;
+DROP TABLE Historial_Emocion;
+DROP TABLE Historial_Periodo;
 DROP TABLE Historial_Musical;
 DROP TABLE Publicacion_TipoContenido;
 DROP TABLE Publicacion;
@@ -14,12 +16,10 @@ DROP TABLE UsuarioBasico;
 DROP TABLE UsuarioMembresia;
 DROP TABLE Usuario_Streaming;
 DROP TABLE Usuario;
+DROP TABLE Cancion_Genero;
 DROP TABLE Cancion;
 DROP TABLE Artista;
 DROP TABLE Genero;
-DROP TABLE Historial_Emocion;
-DROP TABLE Historial_Periodo;
-DROP TABLE Cancion_Genero;
 
 
 -- SECCIÓN 1: TABLAS
