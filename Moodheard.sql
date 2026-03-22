@@ -1,14 +1,30 @@
--- ============================================================
--- MOODHEARD — DISEÑO LÓGICO
--- ============================================================
+-- XTABLAS — ELIMINACIÓN EN ORDEN INVERSO DE DEPENDENCIAS
 
+DROP TABLE IF EXISTS FiltroBusqueda;
+DROP TABLE IF EXISTS HistorialBusqueda;
+DROP TABLE IF EXISTS Sancion;
+DROP TABLE IF EXISTS Reporte;
+DROP TABLE IF EXISTS ListaNegra;
+DROP TABLE IF EXISTS ConfiguracionUsuario;
+DROP TABLE IF EXISTS Notificacion;
+DROP TABLE IF EXISTS Recomendacion;
+DROP TABLE IF EXISTS Historial_Musical;
+DROP TABLE IF EXISTS Publicacion;
+DROP TABLE IF EXISTS UsuarioBasico;
+DROP TABLE IF EXISTS UsuarioMembresia;
+DROP TABLE IF EXISTS Usuario;
+DROP TABLE IF EXISTS Cancion_Genero;
+DROP TABLE IF EXISTS Cancion;
+DROP TABLE IF EXISTS Artista;
+DROP TABLE IF EXISTS Genero;
+DROP TABLE IF EXISTS Comunidad;
+DROP TABLE IF EXISTS Pago;
+DROP TABLE IF EXISTS Membresia;
 
--- ============================================================
 -- SECCIÓN 1: TABLAS
--- (Solo estructura: columnas, nulabilidad y clave primaria)
--- ============================================================
 
--- 🟢 GRAN CONCEPTO: CANCIÓN
+
+--GRAN CONCEPTO: CANCIÓN
 
 CREATE TABLE Genero (
     idGenero        INT(10)         PRIMARY KEY,
@@ -31,54 +47,13 @@ CREATE TABLE Cancion (
     idArtista       INT(10)         NOT NULL
 );
 
-CREATE TABLE Cancion_Genero (
-    idCancion       INT(10)         NOT NULL,
-    idGenero        INT(10)         NOT NULL,
-    CONSTRAINT pk_Cancion_Genero    PRIMARY KEY (idCancion, idGenero)
-);
-
-
--- 💙 GRAN CONCEPTO: PAGOS & MEMBRESÍAS — CICLO 2
-
-CREATE TABLE Membresia (
-    idMembresia         INT(10)         PRIMARY KEY,
-    tipoMembresia       VARCHAR(20)     NOT NULL,
-    fechaInicio         DATE            NOT NULL,
-    fechaFin            DATE            NOT NULL,
-    precio              DECIMAL(10,2)   NOT NULL,
-    estadoMembresia     VARCHAR(20)     NOT NULL
-);
-
-CREATE TABLE Pago (
-    idPago          INT(10)         PRIMARY KEY,
-    fechaPago       DATE            NOT NULL,
-    monto           INT(10)         NOT NULL,
-    metodoPago      VARCHAR(20)     NOT NULL,
-    estadoPago      VARCHAR(20)     NOT NULL,
-    idMembresia     INT(10)         NOT NULL
-);
-
-
--- 🫧 GRAN CONCEPTO: COMUNIDAD
-
-CREATE TABLE Comunidad (
-    idComunidad         INT(10)         PRIMARY KEY,
-    nombreComunidad     VARCHAR(255)    NOT NULL,
-    descripcion         VARCHAR(255)    NOT NULL,
-    fechaCreacion       DATE            NOT NULL,
-    tipoComunidad       VARCHAR(20)     NOT NULL,
-    estadoComunidad     VARCHAR(20)     NOT NULL,
-    idMembresia         INT(10)         NULL
-);
-
-
--- 🟣 GRAN CONCEPTO: USUARIO
+-- GRAN CONCEPTO: USUARIO
 
 CREATE TABLE Usuario (
     idUsuario               INT(10)         PRIMARY KEY,
     nombreUsuario           VARCHAR(255)    NOT NULL,
     correo                  VARCHAR(255)    NOT NULL,
-    contrasena              VARCHAR(16)     NOT NULL,
+    contraseña              VARCHAR(16)     NOT NULL,
     fechaRegistro           DATE            NOT NULL,
     descripcionPerfil       VARCHAR(100)    NULL,
     plataformaStreaming      VARCHAR(20)     NOT NULL
@@ -98,14 +73,14 @@ CREATE TABLE UsuarioMembresia (
 );
 
 
--- 🩷 GRAN CONCEPTO: HUELLA MUSICAL
+-- GRAN CONCEPTO: HUELLA MUSICAL
 
 CREATE TABLE Publicacion (
     idPublicacion       INT(10)         PRIMARY KEY,
     contenido           VARCHAR(255)    NOT NULL,
     fechaPublicacion    DATE            NOT NULL,
-    likes               INT(10)         NOT NULL    DEFAULT 0,
-    comentarios         INT(10)         NOT NULL    DEFAULT 0,
+    likes               INT(10)         NOT NULL,    
+    comentarios         INT(10)         NOT NULL,    
     tipoContenido       VARCHAR(20)     NOT NULL,
     idUsuario           INT(10)         NOT NULL,
     idCancionAdjunta    INT(10)         NULL
@@ -123,7 +98,7 @@ CREATE TABLE Historial_Musical (
 );
 
 
--- 🟤 GRAN CONCEPTO: RECOMENDACIÓN
+-- GRAN CONCEPTO: RECOMENDACIÓN
 
 CREATE TABLE Recomendacion (
     idRecomendacion         INT(10)         PRIMARY KEY,
@@ -135,27 +110,15 @@ CREATE TABLE Recomendacion (
     idComunidad             INT(10)         NULL
 );
 
-
--- 🔔 GRAN CONCEPTO: NOTIFICACIÓN
-
-CREATE TABLE Notificacion (
-    idNotificacion              INT(10)         PRIMARY KEY,
-    correoUsuario               VARCHAR(255)    NOT NULL,
-    fechaPagoRechazado          DATE            NOT NULL,
-    descripcionNotificacion     VARCHAR(255)    NOT NULL,
-    idPago                      INT(10)         NOT NULL
-);
-
-
--- ⚙️ GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
+-- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
 CREATE TABLE ConfiguracionUsuario (
     idConfiguracion         INT(10)         PRIMARY KEY,
-    perfilPublico           BOOLEAN         NOT NULL    DEFAULT TRUE,
-    quienPuedeSeguir        VARCHAR(15)     NOT NULL    DEFAULT 'todos',
-    quienVeHistorial        VARCHAR(15)     NOT NULL    DEFAULT 'todos',
-    quienVePublicaciones    VARCHAR(15)     NOT NULL    DEFAULT 'todos',
-    notificacionesActivas   BOOLEAN         NOT NULL    DEFAULT TRUE,
+    perfilPublico           BOOLEAN         NOT NULL,
+    quienPuedeSeguir        VARCHAR(15)     NOT NULL,
+    quienVeHistorial        VARCHAR(15)     NOT NULL,
+    quienVePublicaciones    VARCHAR(15)     NOT NULL,
+    notificacionesActivas   BOOLEAN         NOT NULL,
     idUsuario               INT(10)         NOT NULL
 );
 
@@ -168,7 +131,7 @@ CREATE TABLE ListaNegra (
 );
 
 
--- 🚨 GRAN CONCEPTO: MODERACIÓN & REPORTE
+-- GRAN CONCEPTO: MODERACIÓN & REPORTE
 
 CREATE TABLE Reporte (
     idReporte               INT(10)         PRIMARY KEY,
@@ -177,7 +140,7 @@ CREATE TABLE Reporte (
     motivoReporte           VARCHAR(30)     NOT NULL,
     descripcionReporte      VARCHAR(255)    NULL,
     fechaReporte            DATE            NOT NULL,
-    estadoReporte           VARCHAR(20)     NOT NULL    DEFAULT 'pendiente'
+    estadoReporte           VARCHAR(20)     NOT NULL
 );
 
 CREATE TABLE Sancion (
@@ -191,7 +154,7 @@ CREATE TABLE Sancion (
 );
 
 
--- 🔍 GRAN CONCEPTO: BÚSQUEDA & DESCUBRIMIENTO
+-- GRAN CONCEPTO: BÚSQUEDA & DESCUBRIMIENTO
 
 CREATE TABLE HistorialBusqueda (
     idBusqueda          INT(10)         PRIMARY KEY,
@@ -203,7 +166,7 @@ CREATE TABLE HistorialBusqueda (
 CREATE TABLE FiltroBusqueda (
     idFiltro            INT(10)         PRIMARY KEY,
     fechaUso            DATE            NOT NULL,
-    exito               BOOLEAN         NOT NULL    DEFAULT FALSE,
+    exito               BOOLEAN         NOT NULL,
     ipOrigen            VARCHAR(45)     NOT NULL,
     periodo             DATE            NULL,
     idUsuario           INT(10)         NOT NULL,
@@ -213,174 +176,155 @@ CREATE TABLE FiltroBusqueda (
     idBusqueda          INT(10)         NULL
 );
 
-
--- ============================================================
--- SECCIÓN 2: CLAVES FORÁNEAS
--- ============================================================
-
--- 🟢 Canción
+-- SECCIÓN 2: ATRIBUTOS
+-- Canción
 ALTER TABLE Cancion
-    ADD CONSTRAINT fk_Cancion_Artista       FOREIGN KEY (idArtista)             REFERENCES Artista(idArtista);
+    ADD CONSTRAINT fk_Cancion_Artista       
+    FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
 ALTER TABLE Cancion_Genero
-    ADD CONSTRAINT fk_CG_Cancion            FOREIGN KEY (idCancion)             REFERENCES Cancion(idCancion);
+    ADD CONSTRAINT fk_CG_Cancion 
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
+
 ALTER TABLE Cancion_Genero
-    ADD CONSTRAINT fk_CG_Genero             FOREIGN KEY (idGenero)              REFERENCES Genero(idGenero);
+    ADD CONSTRAINT fk_CG_Genero             
+    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
 
--- 💙 Pagos & Membresías
-ALTER TABLE Pago
-    ADD CONSTRAINT fk_Pago_Membresia        FOREIGN KEY (idMembresia)           REFERENCES Membresia(idMembresia);
-
--- 🫧 Comunidad
-ALTER TABLE Comunidad
-    ADD CONSTRAINT fk_Comunidad_Membresia   FOREIGN KEY (idMembresia)           REFERENCES Membresia(idMembresia);
-
--- 🟣 Usuario
+-- Usuario
 ALTER TABLE UsuarioBasico
-    ADD CONSTRAINT fk_UsuarioBasico         FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_UsuarioBasico 
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT fk_UsuarioMembresia      FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_UsuarioMembresia      
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
--- 🩷 Huella Musical
+-- Huella Musical
 ALTER TABLE Publicacion
-    ADD CONSTRAINT fk_Publicacion_Usuario   FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Publicacion_Usuario   
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+
 ALTER TABLE Publicacion
-    ADD CONSTRAINT fk_Publicacion_Cancion   FOREIGN KEY (idCancionAdjunta)      REFERENCES Cancion(idCancion);
+    ADD CONSTRAINT fk_Publicacion_Cancion   
+    FOREIGN KEY (idCancionAdjunta) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Historial_Musical
-    ADD CONSTRAINT fk_HM_Cancion            FOREIGN KEY (idCancion)             REFERENCES Cancion(idCancion);
+    ADD CONSTRAINT fk_HM_Cancion            
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
+
 ALTER TABLE Historial_Musical
-    ADD CONSTRAINT fk_HM_Usuario            FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_HM_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
--- 🟤 Recomendación
+-- Recomendación
 ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Usuario          FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
-ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Cancion          FOREIGN KEY (idCancion)             REFERENCES Cancion(idCancion);
-ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Comunidad        FOREIGN KEY (idComunidad)           REFERENCES Comunidad(idComunidad);
+    ADD CONSTRAINT fk_Reco_Usuario 
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
--- 🔔 Notificación
-ALTER TABLE Notificacion
-    ADD CONSTRAINT fk_Notificacion_Pago     FOREIGN KEY (idPago)                REFERENCES Pago(idPago);
+ALTER TABLE Recomendacion
+    ADD CONSTRAINT fk_Reco_Cancion          
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
--- ⚙️ Configuración & Privacidad
+ALTER TABLE Recomendacion
+    ADD CONSTRAINT fk_Reco_Comunidad        
+    FOREIGN KEY (idComunidad) REFERENCES Comunidad(idComunidad);
+
+-- Configuración & Privacidad
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT fk_Config_Usuario        FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Config_Usuario        
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE ListaNegra
-    ADD CONSTRAINT fk_LN_Origen             FOREIGN KEY (idUsuarioOrigen)       REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_LN_Origen             
+    FOREIGN KEY (idUsuarioOrigen) REFERENCES Usuario(idUsuario);
+
 ALTER TABLE ListaNegra
-    ADD CONSTRAINT fk_LN_Destino            FOREIGN KEY (idUsuarioDestino)      REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_LN_Destino  
+    FOREIGN KEY (idUsuarioDestino) REFERENCES Usuario(idUsuario);
 
--- 🚨 Moderación & Reporte
+-- Moderación & Reporte
 ALTER TABLE Reporte
-    ADD CONSTRAINT fk_Reporte_Reportante    FOREIGN KEY (idUsuarioReportante)   REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Reporte_Reportante    
+    FOREIGN KEY (idUsuarioReportante) REFERENCES Usuario(idUsuario);
+
 ALTER TABLE Reporte
-    ADD CONSTRAINT fk_Reporte_Reportado     FOREIGN KEY (idUsuarioReportado)    REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Reporte_Reportado     
+    FOREIGN KEY (idUsuarioReportado) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Sancion
-    ADD CONSTRAINT fk_Sancion_Reporte       FOREIGN KEY (idReporte)             REFERENCES Reporte(idReporte);
-ALTER TABLE Sancion
-    ADD CONSTRAINT fk_Sancion_Usuario       FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Sancion_Reporte       
+    FOREIGN KEY (idReporte) REFERENCES Reporte(idReporte);
 
--- 🔍 Búsqueda & Descubrimiento
+ALTER TABLE Sancion
+    ADD CONSTRAINT fk_Sancion_Usuario       
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+
+-- Búsqueda & Descubrimiento
 ALTER TABLE HistorialBusqueda
-    ADD CONSTRAINT fk_HB_Usuario            FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_HB_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Usuario            FOREIGN KEY (idUsuario)             REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_FB_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Genero             FOREIGN KEY (idGenero)              REFERENCES Genero(idGenero);
+    ADD CONSTRAINT fk_FB_Genero             
+    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
+
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Artista            FOREIGN KEY (idArtista)             REFERENCES Artista(idArtista);
+    ADD CONSTRAINT fk_FB_Artista            
+    FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
+
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Historial          FOREIGN KEY (idRegistro)            REFERENCES Historial_Musical(idRegistro);
+    ADD CONSTRAINT fk_FB_Historial 
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
+
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Busqueda           FOREIGN KEY (idBusqueda)            REFERENCES HistorialBusqueda(idBusqueda);
+    ADD CONSTRAINT fk_FB_Busqueda          
+    FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
 
-
--- ============================================================
--- SECCIÓN 3: TIPOS (mediante CHECK constraints)
--- ============================================================
-
--- 💙 Membresia
-ALTER TABLE Membresia
-    ADD CONSTRAINT ck_Membresia_tipo        CHECK (tipoMembresia    IN ('basica', 'premium', 'familia'));
-ALTER TABLE Membresia
-    ADD CONSTRAINT ck_Membresia_estado      CHECK (estadoMembresia  IN ('activa', 'inactiva', 'suspendida'));
-
--- 💙 Pago
-ALTER TABLE Pago
-    ADD CONSTRAINT ck_Pago_metodo           CHECK (metodoPago       IN ('tarjeta', 'transferencia', 'efectivo'));
-ALTER TABLE Pago
-    ADD CONSTRAINT ck_Pago_estado           CHECK (estadoPago       IN ('pendiente', 'aprobado', 'rechazado'));
-
--- 🫧 Comunidad
-ALTER TABLE Comunidad
-    ADD CONSTRAINT ck_Comunidad_tipo        CHECK (tipoComunidad    IN ('publica', 'privada', 'restringida'));
-ALTER TABLE Comunidad
-    ADD CONSTRAINT ck_Comunidad_estado      CHECK (estadoComunidad  IN ('activa', 'inactiva', 'archivada'));
-
--- 🟣 Usuario
+--- # RESTRICCIONES DECLARATIVAS
+-- Usuario
 ALTER TABLE Usuario
-    ADD CONSTRAINT ck_Usuario_streaming     CHECK (plataformaStreaming IN ('spotify', 'apple_music', 'youtube_music', 'deezer', 'tidal'));
+    ADD CONSTRAINT ck_Usuario_streaming     
+    CHECK (plataformaStreaming IN ('spotify', 'apple_music', 'youtube_music', 'deezer', 'tidal'));
 
--- 🟣 UsuarioMembresia
-ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT ck_UM_estado             CHECK (estadoMembresia  IN ('activa', 'inactiva', 'suspendida'));
-ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT ck_UM_tipo               CHECK (tipoMembresia    IN ('basica', 'premium', 'familia'));
-
--- 🩷 Publicacion
+-- Publicacion
 ALTER TABLE Publicacion
-    ADD CONSTRAINT ck_Publicacion_tipo      CHECK (tipoContenido    IN ('cancion', 'album', 'artista', 'playlist'));
+    ADD CONSTRAINT ck_Publicacion_tipo      
+    CHECK (tipoContenido IN ('cancion', 'album', 'artista', 'playlist'));
 
--- 🟤 Recomendacion
+-- Recomendacion
 ALTER TABLE Recomendacion
-    ADD CONSTRAINT ck_Recomendacion_tipo    CHECK (tipoRecomendacion IN ('directa', 'comunidad', 'publica'));
+    ADD CONSTRAINT ck_Recomendacion_tipo    
+    CHECK (tipoRecomendacion IN ('directa', 'comunidad', 'publica'));
 
--- ⚙️ ConfiguracionUsuario
+-- ConfiguracionUsuario
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT ck_Config_seguir         CHECK (quienPuedeSeguir     IN ('todos', 'seguidores', 'nadie'));
-ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT ck_Config_historial      CHECK (quienVeHistorial      IN ('todos', 'seguidores', 'nadie'));
-ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT ck_Config_publicaciones  CHECK (quienVePublicaciones  IN ('todos', 'seguidores', 'nadie'));
+    ADD CONSTRAINT ck_Config_seguir         
+    CHECK (quienPuedeSeguir IN ('todos', 'seguidores', 'nadie'));
 
--- 🚨 Reporte
+ALTER TABLE ConfiguracionUsuario
+    ADD CONSTRAINT ck_Config_historial      
+    CHECK (quienVeHistorial IN ('todos', 'seguidores', 'nadie'));
+
+ALTER TABLE ConfiguracionUsuario
+    ADD CONSTRAINT ck_Config_publicaciones  
+    CHECK (quienVePublicaciones IN ('todos', 'seguidores', 'nadie'));
+
+-- Reporte
 ALTER TABLE Reporte
-    ADD CONSTRAINT ck_Reporte_motivo        CHECK (motivoReporte    IN ('spam', 'contenido_inapropiado', 'acoso', 'derechos_autor', 'otro'));
-ALTER TABLE Reporte
-    ADD CONSTRAINT ck_Reporte_estado        CHECK (estadoReporte    IN ('pendiente', 'revisado', 'resuelto', 'descartado'));
+    ADD CONSTRAINT ck_Reporte_motivo        
+    CHECK (motivoReporte IN ('spam', 'contenido_inapropiado', 'acoso', 'derechos_autor', 'otro'));
 
--- 🚨 Sancion
+ALTER TABLE Reporte
+    ADD CONSTRAINT ck_Reporte_estado 
+    CHECK (estadoReporte IN ('pendiente', 'revisado', 'resuelto', 'descartado'));
+
+-- Sancion
 ALTER TABLE Sancion
-    ADD CONSTRAINT ck_Sancion_tipo          CHECK (tipoSancion      IN ('advertencia', 'suspension_temporal', 'ban_permanente'));
+    ADD CONSTRAINT ck_Sancion_tipo          
+    CHECK (tipoSancion IN ('advertencia', 'suspension_temporal', 'ban_permanente'));
 
 
--- ============================================================
--- XTABLAS — ELIMINACIÓN EN ORDEN INVERSO DE DEPENDENCIAS
--- ============================================================
-
-DROP TABLE IF EXISTS FiltroBusqueda;
-DROP TABLE IF EXISTS HistorialBusqueda;
-DROP TABLE IF EXISTS Sancion;
-DROP TABLE IF EXISTS Reporte;
-DROP TABLE IF EXISTS ListaNegra;
-DROP TABLE IF EXISTS ConfiguracionUsuario;
-DROP TABLE IF EXISTS Notificacion;
-DROP TABLE IF EXISTS Recomendacion;
-DROP TABLE IF EXISTS Historial_Musical;
-DROP TABLE IF EXISTS Publicacion;
-DROP TABLE IF EXISTS UsuarioBasico;
-DROP TABLE IF EXISTS UsuarioMembresia;
-DROP TABLE IF EXISTS Usuario;
-DROP TABLE IF EXISTS Cancion_Genero;
-DROP TABLE IF EXISTS Cancion;
-DROP TABLE IF EXISTS Artista;
-DROP TABLE IF EXISTS Genero;
-DROP TABLE IF EXISTS Comunidad;
-DROP TABLE IF EXISTS Pago;
-DROP TABLE IF EXISTS Membresia;
