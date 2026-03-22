@@ -334,6 +334,15 @@ ALTER TABLE FiltroBusqueda
     FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
 
 -- #RESTRICCIONES DECLARATIVAS
+-- Usuario
+ALTER TABLE Usuario
+    ADD CONSTRAINT uq_Usuario_nombre    UNIQUE (nombreUsuario);
+
+ALTER TABLE Usuario
+    ADD CONSTRAINT uq_Usuario_correo    UNIQUE (correo);
+
+ALTER TABLE Genero
+    ADD CONSTRAINT uq_Genero_nombre     UNIQUE (nombreGenero);
 
 -- Usuario_Streaming
 ALTER TABLE Usuario_Streaming
