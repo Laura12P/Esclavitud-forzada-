@@ -196,7 +196,6 @@ CREATE TABLE FiltroBusqueda (
     fechaUso            DATE            NOT NULL,
     exito               NUMBER(1)       NOT NULL,
     periodo             DATE            NULL,
-    idUsuario           NUMBER(10)      NOT NULL,
     idGenero            NUMBER(10)      NULL,
     idArtista           NUMBER(10)      NULL,
     idRegistro          NUMBER(10)      NULL,
@@ -307,10 +306,6 @@ ALTER TABLE Sancion
 -- Búsqueda & Descubrimiento
 ALTER TABLE HistorialBusqueda
     ADD CONSTRAINT fk_HB_Usuario            
-    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
-
-ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Usuario            
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE FiltroBusqueda
