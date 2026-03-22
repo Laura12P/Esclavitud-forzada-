@@ -74,9 +74,8 @@ CREATE TABLE UsuarioBasico (
     idUsuario       NUMBER(10)      PRIMARY KEY
 );
 
-CREATE TABLE UsuarioMembresia (
-    idUsuarioMembresia      NUMBER(10)      PRIMARY KEY,
-    idUsuario               NUMBER(10)      NOT NULL,
+CREATE TABLE UsuarioMembresia (    
+    idUsuario               NUMBER(10)      PRIMARY KEY,
     fechaInicioMembresia    DATE            NOT NULL,
     fechaFinMembresia       DATE            NULL,
     estadoMembresia         VARCHAR(20)     NOT NULL,
@@ -234,7 +233,7 @@ ALTER TABLE UsuarioBasico
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT fk_UsuarioMembresia      
+    ADD CONSTRAINT fk_UsuarioMembresia
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 
