@@ -113,13 +113,13 @@ CREATE TABLE Recomendacion (
 -- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
 CREATE TABLE ConfiguracionUsuario (
-    idConfiguracion         NUMBER(10)         PRIMARY KEY,
-    perfilPublico           BOOLEAN         NOT NULL,
-    quienPuedeSeguir        VARCHAR(15)     NOT NULL,
-    quienVeHistorial        VARCHAR(15)     NOT NULL,
-    quienVePublicaciones    VARCHAR(15)     NOT NULL,
-    notificacionesActivas   BOOLEAN         NOT NULL,
-    idUsuario               NUMBER(10)         NOT NULL
+    idConfiguracion         INT(10)         PRIMARY KEY,
+    perfilPublico           NUMBER(1)       NOT NULL,    
+    quienPuedeSeguir        VARCHAR2(15)    NOT NULL,    
+    quienVeHistorial        VARCHAR2(15)    NOT NULL,   
+    quienVePublicaciones    VARCHAR2(15)    NOT NULL,    
+    notificacionesActivas   NUMBER(1)       NOT NULL,    
+    idUsuario               INT(10)         NOT NULL,
 );
 
 CREATE TABLE ListaNegra (
@@ -312,6 +312,14 @@ ALTER TABLE ConfiguracionUsuario
 ALTER TABLE ConfiguracionUsuario
     ADD CONSTRAINT ck_Config_publicaciones  
     CHECK (quienVePublicaciones IN ('todos', 'seguidores', 'nadie'));
+
+ALTER TABLE ConfiguracionUsuario
+    ADD CONSTRAINT ck_Config_perfilPublico      
+    CHECK (perfilPublico IN (0, 1));
+
+ALTER TABLE ConfiguracionUsuario
+    ADD CONSTRAINT ck_Config_notificaciones     
+    CHECK (notificacionesActivas IN (0, 1));
 
 -- Reporte
 ALTER TABLE Reporte
