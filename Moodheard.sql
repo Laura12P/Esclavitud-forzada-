@@ -119,7 +119,7 @@ CREATE TABLE ConfiguracionUsuario (
     quienVeHistorial        VARCHAR2(15)    NOT NULL,   
     quienVePublicaciones    VARCHAR2(15)    NOT NULL,    
     notificacionesActivas   NUMBER(1)       NOT NULL,    
-    idUsuario               INT(10)         NOT NULL,
+    idUsuario               NUMBER(10)         NOT NULL
 );
 
 CREATE TABLE ListaNegra (
