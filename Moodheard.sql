@@ -76,44 +76,44 @@ CREATE TABLE UsuarioMembresia (
 -- GRAN CONCEPTO: HUELLA MUSICAL
 
 CREATE TABLE Publicacion (
-    idPublicacion       NUMBER(10)         PRIMARY KEY,
+    idPublicacion       NUMBER(10)      PRIMARY KEY,
     contenido           VARCHAR(255)    NOT NULL,
     fechaPublicacion    DATE            NOT NULL,
-    likes               NUMBER(10)         NOT NULL,    
-    comentarios         NUMBER(10)         NOT NULL,    
+    likes               NUMBER(10)      NOT NULL,    
+    comentarios         NUMBER(10)      NOT NULL,    
     tipoContenido       VARCHAR(20)     NOT NULL,
-    idUsuario           NUMBER(10)         NOT NULL,
-    idCancionAdjunta    NUMBER(10)         NULL
+    idUsuario           NUMBER(10)      NOT NULL,
+    idCancionAdjunta    NUMBER(10)      NULL
 );
 
 CREATE TABLE Historial_Musical (
-    idRegistro          NUMBER(10)         PRIMARY KEY,
+    idRegistro          NUMBER(10)      PRIMARY KEY,
     fechaRegistro       DATE            NOT NULL,
     periodoInicio       DATE            NOT NULL,
     periodoFin          DATE            NULL,
     notaPersonal        VARCHAR(255)    NULL,
     emocion             VARCHAR(10)     NOT NULL,
-    idCancion           NUMBER(10)         NOT NULL,
-    idUsuario           NUMBER(10)         NOT NULL
+    idCancion           NUMBER(10)      NOT NULL,
+    idUsuario           NUMBER(10)      NOT NULL
 );
 
 
 -- GRAN CONCEPTO: RECOMENDACIÓN
 
 CREATE TABLE Recomendacion (
-    idRecomendacion         NUMBER(10)         PRIMARY KEY,
+    idRecomendacion         NUMBER(10)      PRIMARY KEY,
     fechaRecomendacion      DATE            NOT NULL,
     mensajeRecomendacion    VARCHAR(255)    NOT NULL,
     tipoRecomendacion       VARCHAR(20)     NOT NULL,
-    idUsuario               NUMBER(10)         NOT NULL,
-    idCancion               NUMBER(10)         NULL,
-    idComunidad             NUMBER(10)         NULL
+    idUsuario               NUMBER(10)      NOT NULL,
+    idCancion               NUMBER(10)      NULL,
+    idComunidad             NUMBER(10)      NULL
 );
 
 -- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
 CREATE TABLE ConfiguracionUsuario (
-    idConfiguracion         INT(10)         PRIMARY KEY,
+    idConfiguracion         NUMBER(10)      PRIMARY KEY,
     perfilPublico           NUMBER(1)       NOT NULL,    
     quienPuedeSeguir        VARCHAR2(15)    NOT NULL,    
     quienVeHistorial        VARCHAR2(15)    NOT NULL,   
