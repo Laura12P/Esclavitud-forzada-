@@ -104,6 +104,20 @@ CREATE TABLE Historial_Musical (
     idUsuario           NUMBER(10)      NOT NULL
 );
 
+-- Atributo con multiplicidad muchos
+CREATE TABLE Historial_Periodo (
+    idRegistro      NUMBER(10)      NOT NULL,
+    periodo         DATE            NOT NULL,
+    CONSTRAINT pk_Historial_Periodo     PRIMARY KEY (idRegistro, periodo)
+);
+
+-- Atributo con multiplicidad muchos
+CREATE TABLE Historial_Emocion (
+    idRegistro      NUMBER(10)      NOT NULL,
+    emocion         VARCHAR(10)     NOT NULL,
+    CONSTRAINT pk_Historial_Emocion     PRIMARY KEY (idRegistro, emocion)
+);
+
 
 -- GRAN CONCEPTO: RECOMENDACIÓN
 
