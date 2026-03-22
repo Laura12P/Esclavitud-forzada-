@@ -1,25 +1,25 @@
 -- XTABLAS — ELIMINACIÓN EN ORDEN INVERSO DE DEPENDENCIAS
 
-DROP TABLE IF EXISTS FiltroBusqueda;
-DROP TABLE IF EXISTS HistorialBusqueda;
-DROP TABLE IF EXISTS Sancion;
-DROP TABLE IF EXISTS Reporte;
-DROP TABLE IF EXISTS ListaNegra;
-DROP TABLE IF EXISTS ConfiguracionUsuario;
-DROP TABLE IF EXISTS Notificacion;
-DROP TABLE IF EXISTS Recomendacion;
-DROP TABLE IF EXISTS Historial_Musical;
-DROP TABLE IF EXISTS Publicacion;
-DROP TABLE IF EXISTS UsuarioBasico;
-DROP TABLE IF EXISTS UsuarioMembresia;
-DROP TABLE IF EXISTS Usuario;
-DROP TABLE IF EXISTS Cancion_Genero;
-DROP TABLE IF EXISTS Cancion;
-DROP TABLE IF EXISTS Artista;
-DROP TABLE IF EXISTS Genero;
-DROP TABLE IF EXISTS Comunidad;
-DROP TABLE IF EXISTS Pago;
-DROP TABLE IF EXISTS Membresia;
+DROP TABLE FiltroBusqueda;
+DROP TABLE HistorialBusqueda;
+DROP TABLE Sancion;
+DROP TABLE Reporte;
+DROP TABLE ListaNegra;
+DROP TABLE ConfiguracionUsuario;
+DROP TABLE Notificacion;
+DROP TABLE Recomendacion;
+DROP TABLE Historial_Musical;
+DROP TABLE Publicacion;
+DROP TABLE UsuarioBasico;
+DROP TABLE UsuarioMembresia;
+DROP TABLE Usuario;
+DROP TABLE Cancion_Genero;
+DROP TABLE Cancion;
+DROP TABLE Artista;
+DROP TABLE Genero;
+DROP TABLE Comunidad;
+DROP TABLE Pago;
+DROP TABLE Membresia;
 
 -- SECCIÓN 1: TABLAS
 
@@ -334,5 +334,3 @@ ALTER TABLE Reporte
 ALTER TABLE Sancion
     ADD CONSTRAINT ck_Sancion_tipo          
     CHECK (tipoSancion IN ('advertencia', 'suspension_temporal', 'ban_permanente'));
-
-
