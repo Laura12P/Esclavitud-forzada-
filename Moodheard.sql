@@ -164,16 +164,16 @@ CREATE TABLE HistorialBusqueda (
 );
 
 CREATE TABLE FiltroBusqueda (
-    idFiltro            NUMBER(10)         PRIMARY KEY,
+    idFiltro            NUMBER(10)      PRIMARY KEY,
     fechaUso            DATE            NOT NULL,
-    exito               BOOLEAN         NOT NULL,
-    ipOrigen            VARCHAR(45)     NOT NULL,
+    exito               NUMBER(1)       NOT NULL,
+    ipOrigen            VARCHAR2(45)    NOT NULL,
     periodo             DATE            NULL,
-    idUsuario           NUMBER(10)         NOT NULL,
-    idGenero            NUMBER(10)         NULL,
-    idArtista           NUMBER(10)         NULL,
-    idRegistro          NUMBER(10)         NULL,
-    idBusqueda          NUMBER(10)         NULL
+    idUsuario           NUMBER(10)      NOT NULL,
+    idGenero            NUMBER(10)      NULL,
+    idArtista           NUMBER(10)      NULL,
+    idRegistro          NUMBER(10)      NULL,
+    idBusqueda          NUMBER(10)      NULL
 );
 
 -- SECCIÓN 2: ATRIBUTOS
@@ -334,3 +334,8 @@ ALTER TABLE Reporte
 ALTER TABLE Sancion
     ADD CONSTRAINT ck_Sancion_tipo          
     CHECK (tipoSancion IN ('advertencia', 'suspension_temporal', 'ban_permanente'));
+
+-- Filtro Busqueda
+ALTER TABLE FiltroBusqueda
+    ADD CONSTRAINT ck_FB_exito      
+    CHECK (exito IN (0, 1));
