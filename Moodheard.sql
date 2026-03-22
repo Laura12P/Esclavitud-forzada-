@@ -17,6 +17,10 @@ DROP TABLE Usuario;
 DROP TABLE Cancion;
 DROP TABLE Artista;
 DROP TABLE Genero;
+DROP TABLE Historial_Emocion;
+DROP TABLE Historial_Periodo;
+DROP TABLE Cancion_Genero;
+
 
 -- SECCIÓN 1: TABLAS
 
@@ -41,6 +45,12 @@ CREATE TABLE Cancion (
     duracion        NUMBER(10)      NOT NULL,
     ano             DATE            NOT NULL,
     idArtista       NUMBER(10)      NOT NULL
+);
+-- Relación muchos a muchos
+CREATE TABLE Cancion_Genero (
+    idCancion       NUMBER(10)      NOT NULL,
+    idGenero        NUMBER(10)      NOT NULL,
+    CONSTRAINT pk_Cancion_Genero    PRIMARY KEY (idCancion, idGenero)
 );
 
 -- GRAN CONCEPTO: USUARIO
@@ -206,6 +216,15 @@ ALTER TABLE Cancion
     ADD CONSTRAINT fk_Cancion_Artista       
     FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
+-- Cancion_Genero
+ALTER TABLE Cancion_Genero
+    ADD CONSTRAINT fk_CG_Cancion
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
+
+ALTER TABLE Cancion_Genero
+    ADD CONSTRAINT fk_CG_Genero
+    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
+
 -- Usuario
 ALTER TABLE Usuario_Streaming
     ADD CONSTRAINT fk_US_Usuario            
@@ -240,6 +259,16 @@ ALTER TABLE Historial_Musical
 ALTER TABLE Historial_Musical
     ADD CONSTRAINT fk_HM_Usuario            
     FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+
+-- Historial_Periodo
+ALTER TABLE Historial_Periodo
+    ADD CONSTRAINT fk_HP_Historial
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
+
+-- Historial_Emocion
+ALTER TABLE Historial_Emocion
+    ADD CONSTRAINT fk_HE_Historial
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
 
 -- Recomendación
 ALTER TABLE Recomendacion
