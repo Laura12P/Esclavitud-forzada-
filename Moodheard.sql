@@ -137,7 +137,6 @@ CREATE TABLE Recomendacion (
     tipoRecomendacion       VARCHAR(20)     NOT NULL,
     idUsuario               NUMBER(10)      NOT NULL,
     idCancion               NUMBER(10)      NULL,
-    idComunidad             NUMBER(10)      NULL
 );
 
 
