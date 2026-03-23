@@ -1,0 +1,411 @@
+----- CICLO 1: TABLAS
+CREATE TABLE Punto (
+orden NUMBER(2) NOT NULL,
+nombre VARCHAR2(10) PRIMARY KEY,
+tipo VARCHAR2(20) NOT NULL,
+distancia NUMBER(8,2) NOT NULL,
+tiempoLimite DATE NOT NULL
+);
+
+CREATE TABLE Carrera (
+codigo VARCHAR2(20) PRIMARY KEY,
+nombre VARCHAR2(30) NOT NULL,
+pais VARCHAR2(50) NOT NULL,
+categoria VARCHAR2(20) NOT NULL,
+periodicidad VARCHAR2(20) NOT NULL,
+nombrePunto VARCHAR2(10)
+);
+
+CREATE TABLE Segmento (
+tipo VARCHAR2(20) NOT NULL,
+nombre VARCHAR2(10) PRIMARY KEY,
+nombrePunto VARCHAR2(10)
+);
+
+CREATE TABLE PropiedadDe (
+porcentaje NUMBER(3),
+idParticipante NUMBER,
+codigoCarrera VARCHAR2(20),
+PRIMARY KEY (idParticipante,codigoCarrera)
+);
+
+CREATE TABLE Version (
+nombre VARCHAR2(20) PRIMARY KEY,
+fecha DATE NOT NULL,
+codigoCarrera VARCHAR2(20)
+);
+
+CREATE TABLE Organizacion (
+versionOrganizacion VARCHAR2(30),
+idParticipante NUMBER,
+nombreVersion VARCHAR2(20),
+PRIMARY KEY (idParticipante,nombreVersion)
+);
+
+CREATE TABLE Participacion (
+idParticipante NUMBER,
+nombreVersion VARCHAR2(20),
+versionParticipacion VARCHAR2(30),
+PRIMARY KEY (idParticipante,nombreVersion)
+);
+
+CREATE TABLE AgrupacionSegmento(
+versionSegmento VARCHAR2(30),
+nombreVersion VARCHAR2(20),
+nombreSegmento VARCHAR2(10),
+PRIMARY KEY(nombreVersion,nombreSegmento)
+);
+
+CREATE TABLE Participante (
+id NUMBER PRIMARY KEY,
+idt VARCHAR2(20) NOT NULL,
+idn VARCHAR2(30) NOT NULL,
+pais VARCHAR2(50) NOT NULL,
+correo VARCHAR2(100) NOT NULL
+);
+
+CREATE TABLE Persona (
+idParticipante NUMBER PRIMARY KEY,
+nombre VARCHAR2(50)
+);
+
+CREATE TABLE Ciclista (
+idParticipante NUMBER PRIMARY KEY,
+nacimiento DATE,
+categoria VARCHAR2(20)
+);
+
+CREATE TABLE Empresa (
+idParticipante NUMBER PRIMARY KEY,
+razonSocial VARCHAR2(30)
+);
+
+CREATE TABLE Encuesta (
+idEncuesta NUMBER PRIMARY KEY,
+criterioEvaluado VARCHAR2(50),
+presupuestoDisponible NUMBER,
+valorUnitario NUMBER,
+fechaInicio DATE,
+fechaFin DATE
+);
+
+CREATE TABLE ParticipacionEncuesta(
+idParticipante NUMBER,
+idEncuesta NUMBER,
+fechaRespuesta DATE,
+estado VARCHAR2(20),
+PRIMARY KEY(idParticipante,idEncuesta)
+);
+
+CREATE TABLE Evaluacion(
+id NUMBER PRIMARY KEY,
+fecha DATE,
+referenciaAutor NUMBER,
+bienEspecifico VARCHAR2(50),
+puntuacion NUMBER(1),
+comentarios VARCHAR2(500),
+estado VARCHAR2(20),
+idEncuesta NUMBER
+);
+
+CREATE TABLE Comentario (
+id NUMBER PRIMARY KEY,
+contenido VARCHAR2(500),
+idEvaluacion NUMBER
+);
+
+CREATE TABLE Registro (
+numero NUMBER PRIMARY KEY,
+fecha DATE,
+tiempo NUMBER,
+posicion NUMBER,
+revision NUMBER,
+dificultad NUMBER,
+comentarios VARCHAR2(500),
+nombreVersion VARCHAR2(20),
+nombreSegmento VARCHAR2(10),
+idParticipante NUMBER
+);
+
+CREATE TABLE Foto (
+idFoto NUMBER PRIMARY KEY,
+numeroRegistro NUMBER,
+descripcion VARCHAR2(200)
+);
+
+--- POBLAROK(1)
+INSERT INTO Punto VALUES (1,'Salida','Partida',0,TO_DATE('2025-03-04','YYYY-MM-DD'));
+INSERT INTO Punto VALUES (2,'Control','Control',50,TO_DATE('2025-03-04','YYYY-MM-DD'));
+INSERT INTO Punto VALUES (3,'Meta','Llegada',100,TO_DATE('2025-03-05','YYYY-MM-DD'));
+
+INSERT INTO Carrera VALUES ('C01','Tour Andes','Colombia','Montaña','Anual','Salida');
+INSERT INTO Carrera VALUES ('C02','Ruta Caribe','Colombia','Ruta','Anual','Control');
+INSERT INTO Carrera VALUES ('C03','Vuelta Bogota','Colombia','Urbana','Anual','Meta');
+
+INSERT INTO Segmento VALUES ('Plano','S1','Salida');
+INSERT INTO Segmento VALUES ('Montaña','S2','Control');
+INSERT INTO Segmento VALUES ('Sprint','S3','Meta');
+
+INSERT INTO Participante VALUES (1,'CC','111','Colombia','a@mail.com');
+INSERT INTO Participante VALUES (2,'CC','222','Colombia','b@mail.com');
+INSERT INTO Participante VALUES (3,'CC','333','Colombia','c@mail.com');
+
+INSERT INTO Persona VALUES (1,'Juan');
+INSERT INTO Persona VALUES (2,'Maria');
+INSERT INTO Persona VALUES (3,'Carlos');
+
+INSERT INTO Ciclista VALUES (1,TO_DATE('2000-01-01','YYYY-MM-DD'),'Elite');
+INSERT INTO Ciclista VALUES (2,TO_DATE('1999-02-02','YYYY-MM-DD'),'Elite');
+INSERT INTO Ciclista VALUES (3,TO_DATE('2002-03-03','YYYY-MM-DD'),'Sub23');
+
+INSERT INTO Encuesta VALUES (1,'Organizacion',1000000,2000,TO_DATE('2025-03-01','YYYY-MM-DD'),TO_DATE('2025-04-01','YYYY-MM-DD'));
+INSERT INTO Encuesta VALUES (2,'Seguridad',2000000,3000,TO_DATE('2025-04-01','YYYY-MM-DD'),TO_DATE('2025-05-01','YYYY-MM-DD'));
+INSERT INTO Encuesta VALUES (3,'Logistica',1500000,2500,TO_DATE('2025-05-01','YYYY-MM-DD'),TO_DATE('2025-06-01','YYYY-MM-DD'));
+
+INSERT INTO Evaluacion VALUES (1,TO_DATE('2025-04-10','YYYY-MM-DD'),1,'Casco',5,'Muy bueno','Activo',1);
+INSERT INTO Evaluacion VALUES (2,TO_DATE('2025-04-11','YYYY-MM-DD'),2,'Bicicleta',4,'Buen estado','Activo',1);
+INSERT INTO Evaluacion VALUES (3,TO_DATE('2025-04-12','YYYY-MM-DD'),3,'Guantes',3,'Aceptable','Activo',2);
+
+INSERT INTO Registro VALUES (1,TO_DATE('2025-04-05','YYYY-MM-DD'),30,1,1,2,'Buen tiempo','V1','S1',1);
+INSERT INTO Registro VALUES (2,TO_DATE('2025-04-05','YYYY-MM-DD'),32,2,1,3,'Buen esfuerzo','V1','S2',2);
+INSERT INTO Registro VALUES (3,TO_DATE('2025-04-05','YYYY-MM-DD'),35,3,1,4,'Regular','V1','S3',3);
+
+INSERT INTO Foto VALUES (1,1,'Ganador');
+INSERT INTO Foto VALUES (2,2,'Montaña');
+INSERT INTO Foto VALUES (3,3,'Meta');
+
+--- CICLO 1: PoblarNoOK (2 y 3)
+
+-- PK duplicada
+INSERT INTO Punto VALUES (1,'Salida','Partida',0,TO_DATE('2025-03-04','YYYY-MM-DD'));
+
+-- NULL en campo obligatorio
+INSERT INTO Punto VALUES (4,'P4',NULL,20,TO_DATE('2025-03-04','YYYY-MM-DD'));
+
+-- segmento con punto inexistente
+INSERT INTO Segmento VALUES ('Plano','S10','PuntoFalso');
+
+--- CICLO 1: XPoblar
+
+DELETE FROM Foto;
+DELETE FROM Registro;
+DELETE FROM Comentario;
+DELETE FROM Evaluacion;
+DELETE FROM Encuesta;
+DELETE FROM Ciclista;
+DELETE FROM Persona;
+DELETE FROM Participante;
+DELETE FROM Segmento;
+DELETE FROM Punto;
+DELETE FROM Carrera;
+
+--- CICLO 1: Restricciones De PRIMARY KEY
+ALTER TABLE Punto
+  ADD CONSTRAINT pk_punto_nombre
+  PRIMARY KEY (nombre);
+
+ALTER TABLE Carrera
+  ADD CONSTRAINT pk_carrera_codigo
+  PRIMARY KEY (Codigo);
+
+ALTER TABLE Segmento
+  ADD CONSTRAINT pk_segmento_nombre
+  PRIMARY KEY (nombre);
+
+ALTER TABLE PropiedadDe
+  ADD CONSTRAINT pk_propiedadDe_idParticipante_CodigoCarrera
+  PRIMARY KEY (idParticipante, codigoCarrera);
+
+ALTER TABLE Version
+  ADD CONSTRAINT pk_version_nombre
+  PRIMARY KEY (nombre);
+
+ALTER TABLE Organizacion
+    ADD CONSTRAINT pk_organizacion_idParticipante_nombreVersion
+    PRIMARY KEY (idParticipante, nombreVersion);
+ 
+ALTER TABLE Participacion
+    ADD CONSTRAINT pk_participacion_idParticipante_nombreVersion
+    PRIMARY KEY (idParticipante, nombreVersion);
+ 
+ALTER TABLE AgrupacionSegmento
+    ADD CONSTRAINT pk_agrupacionSegmento_nombreVersion_nombreSegmento
+    PRIMARY KEY (nombreVersion, nombreSegmento);
+ 
+ALTER TABLE Participante
+    ADD CONSTRAINT pk_participante_id
+    PRIMARY KEY (id);
+ 
+ALTER TABLE Persona
+    ADD CONSTRAINT pk_persona_idParticipante
+    PRIMARY KEY (idParticipante);
+ 
+ALTER TABLE Ciclista
+    ADD CONSTRAINT pk_ciclista_idParticipante
+    PRIMARY KEY (idParticipante);
+ 
+ALTER TABLE Empresa
+    ADD CONSTRAINT pk_empresa_idParticipante
+    PRIMARY KEY (idParticipante);
+ 
+ALTER TABLE Encuesta
+    ADD CONSTRAINT pk_encuesta_idEncuesta
+    PRIMARY KEY (idEncuesta);
+ 
+ALTER TABLE ParticipacionEncuesta
+    ADD CONSTRAINT pk_participacionEncuesta_idParticipante_idEncuesta
+    PRIMARY KEY (idParticipante, idEncuesta);
+ 
+ALTER TABLE Evaluacion
+    ADD CONSTRAINT pk_evaluacion_id
+    PRIMARY KEY (id);
+ 
+ALTER TABLE Comentario
+    ADD CONSTRAINT pk_comentario_id
+    PRIMARY KEY (id);
+ 
+ALTER TABLE Registro
+    ADD CONSTRAINT pk_registro_numero
+    PRIMARY KEY (numero);
+ 
+ALTER TABLE Foto
+    ADD CONSTRAINT pk_foto_idFoto
+    PRIMARY KEY (idFoto);
+ 
+---CICLO 1: Restricciones de atributo (CHECK)
+ALTER TABLE Evaluacion
+    ADD CONSTRAINT ck_evaluacion_puntuacion
+    CHECK (puntuacion BETWEEN 1 AND 5);
+ 
+ALTER TABLE PropiedadDe
+    ADD CONSTRAINT ck_propiedadDe_porcentaje
+    CHECK (porcentaje BETWEEN 0 AND 100);
+
+--- CICLO 1: Restricciones Únicas
+ALTER TABLE Participante
+ADD CONSTRAINT uq_participante_correo UNIQUE(correo);
+
+--- CICLO 1: Restricciones Foráneas
+ALTER TABLE Carrera
+ADD CONSTRAINT fk_carrera_nombrepunto
+FOREIGN KEY(nombrePunto)
+REFERENCES Punto(nombre);
+
+ALTER TABLE Segmento
+ADD CONSTRAINT fk_segmento_nombrePunto
+FOREIGN KEY(nombrePunto)
+REFERENCES Punto (idEncuesta);
+
+ALTER TABLE PropiedadDe
+    ADD CONSTRAINT fk_propiedadDe_idParticipante
+    FOREIGN KEY (idParticipante)
+    REFERENCES Participante (id);
+
+ALTER TABLE PropiedadDe
+    ADD CONSTRAINT fk_propiedadDe_codigoCarrera
+    FOREIGN KEY (codigoCarrera)
+    REFERENCES Carrera (codigo);
+
+ALTER TABLE Version
+    ADD CONSTRAINT fk_version_codigoCarrera
+    FOREIGN KEY (codigoCarrera)
+    REFERENCES Carrera (codigo);
+ 
+ALTER TABLE Organizacion
+    ADD CONSTRAINT fk_organizacion_idParticipante
+    FOREIGN KEY (idParticipante)
+    REFERENCES Participante (id);
+ 
+ALTER TABLE Organizacion
+    ADD CONSTRAINT fk_organizacion_nombreVersion
+    FOREIGN KEY (nombreVersion)
+    REFERENCES Version (nombre);
+
+
+
+--- CICLO 1: Nuevamente POBLANDO:
+
+--- Participante 
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (1, 'CC', '5016', 'nsherbrook0@hibu.com', 'Philippines');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (2, 'TI', '8247', 'lwince1@yahoo.com', 'Cameroon');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (3, 'CE', '6783', 'uedsall2@sourceforge.net', 'Sri Lanka');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (4, 'TI', '9053', 'ewegman3@scientificamerican.com', 'Kenya');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (5, 'TI', '6701', 'hgronou4@jimdo.com', 'Tunisia');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (6, 'CE', '2879', 'emacbane5@oaic.gov.au', 'Egypt');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (7, 'CC', '3197', 'dzorzenoni6@bloomberg.com', 'Tanzania');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (8, 'TI', '7900', 'lkarpe7@sogou.com', 'Albania');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (9, 'TI', '7257', 'jjoseland8@t.co', 'Mexico');
+insert into PARTICIPANTE (id, idt, idn, correo, pais) values (10, 'CC', '5782', 'pflory9@aol.com', 'Malawi');
+
+--- Punto
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (1, 'Salida',    'Control', 17,  TO_DATE('08/07/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (2, 'Salida2',   'Control', 38,  TO_DATE('12/11/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (3, 'Salida3',   'Meta',    39,  TO_DATE('02/14/2026','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (4, 'Control2',  'Salida',  61,  TO_DATE('10/29/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (5, 'Control1',  'Salida',  167, TO_DATE('02/27/2026','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (6, 'Control1b', 'Control', 136, TO_DATE('08/10/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (7, 'Meta',      'Salida',  140, TO_DATE('04/04/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (8, 'Control2b', 'Control', 101, TO_DATE('06/04/2025','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (9, 'Meta2',     'Salida',  181, TO_DATE('02/20/2026','MM/DD/YYYY'));
+insert into Punto (orden, nombre, tipo, distancia, tiempoLimite) values (10,'Meta3',     'Meta',    83,  TO_DATE('12/24/2025','MM/DD/YYYY'));
+
+--- Version
+
+insert into Version (nombre, fecha, codigoCarrera) values ('V1',  TO_DATE('01/08/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V2',  TO_DATE('09/29/2025','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V3',  TO_DATE('02/21/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V4',  TO_DATE('05/11/2025','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V5',  TO_DATE('01/29/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V6',  TO_DATE('02/10/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V7',  TO_DATE('03/09/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V8',  TO_DATE('10/04/2025','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V9',  TO_DATE('03/02/2026','MM/DD/YYYY'), NULL);
+insert into Version (nombre, fecha, codigoCarrera) values ('V10', TO_DATE('04/24/2025','MM/DD/YYYY'), NULL);
+
+--- Encuesta
+
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (1,  'congue etiam justo',        NULL, NULL, TO_DATE('03/24/2025','MM/DD/YYYY'), TO_DATE('04/24/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (2,  'semper porta volutpat',     NULL, NULL, TO_DATE('10/27/2025','MM/DD/YYYY'), TO_DATE('11/27/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (3,  'pede ac diam cras',         NULL, NULL, TO_DATE('01/05/2026','MM/DD/YYYY'), TO_DATE('02/05/2026','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (4,  'condimentum neque sapien',  NULL, NULL, TO_DATE('07/16/2025','MM/DD/YYYY'), TO_DATE('08/16/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (5,  'porttitor id consequat',    NULL, NULL, TO_DATE('12/31/2025','MM/DD/YYYY'), TO_DATE('01/31/2026','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (6,  'nonummy integer non velit', NULL, NULL, TO_DATE('10/19/2025','MM/DD/YYYY'), TO_DATE('11/19/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (7,  'cubilia curae duis',        NULL, NULL, TO_DATE('06/05/2025','MM/DD/YYYY'), TO_DATE('07/05/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (8,  'magnis dis parturient',     NULL, NULL, TO_DATE('06/22/2025','MM/DD/YYYY'), TO_DATE('07/22/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (9,  'sapien arcu sed augue',     NULL, NULL, TO_DATE('07/11/2025','MM/DD/YYYY'), TO_DATE('08/11/2025','MM/DD/YYYY'));
+insert into Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valorUnitario, fechaInicio, fechaFin) values (10, 'nulla ultrices aliquet',    NULL, NULL, TO_DATE('03/23/2025','MM/DD/YYYY'), TO_DATE('04/23/2025','MM/DD/YYYY'));
+
+--- Registro
+
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (1,  TO_DATE('06/27/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Valido',   'V1',  'S1', 1);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (2,  TO_DATE('02/25/2026','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V2',  'S2', 2);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (3,  TO_DATE('08/22/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Valido',   'V3',  'S3', 3);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (4,  TO_DATE('12/13/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Valido',   'V4',  'S1', 4);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (5,  TO_DATE('07/21/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V5',  'S2', 5);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (6,  TO_DATE('06/01/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V6',  'S3', 6);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (7,  TO_DATE('12/04/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V7',  'S1', 7);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (8,  TO_DATE('01/05/2026','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V8',  'S2', 8);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (9,  TO_DATE('01/03/2026','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Valido',   'V9',  'S3', 9);
+insert into Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante) values (10, TO_DATE('10/24/2025','MM/DD/YYYY'), NULL, NULL, NULL, NULL, 'Invalido', 'V10', 'S1', 10);
+
+--- Construcción: consultando
+--- CICLO 1: Cinco segmentos con tiempos más cortos
+
+SELECT nombreSegmento, tiempo
+FROM Registro
+ORDER BY tiempo
+FETCH FIRST 5 ROWS ONLY;
+
+--- CICLO 1: Puntos de la carrera
+
+SELECT nombre, tipo, distancia
+FROM Punto
+ORDER BY orden;
+
+--- CICLO 1: Consulta propuesta
+
+SELECT p.nombre, r.posicion
+FROM Persona p
+JOIN Registro r
+ON p.idParticipante = r.idParticipante
+ORDER BY r.posicion;
