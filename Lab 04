@@ -529,7 +529,7 @@ UPDATE Registro
 SET nombreVersion = 'V2'
 WHERE numero = 400;
 
--XDisparadores
+-- XDisparadores
 DROP TRIGGER trg_registro_autonumero;
 DROP TRIGGER trg_validar_participacion;
 DROP TRIGGER trg_control_update_registro;
