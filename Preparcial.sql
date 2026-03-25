@@ -93,3 +93,32 @@ BEGIN
     FROM Planes WHERE id_plan =: NEW.id_plan;
     :NEW.fecha_fin := :NEW.fecha_inicio + v_duracion;
 END;
+
+-- T3: Si pago rechazado → crear notificación automáticamente
+CREATE TRIGGER trg_notificacion_pago_rechazado
+AFTER INSERT ON Pagos
+FOR EACH ROW 
+WHEN (NEW.estado = 'rechazado')
+BEGIN 
+    INSERT INTO Notificaciones (id_notificaciones, email_usuario, descripcion, medio_pago_usado, comentario, id_pago)
+    SELECT
+    NVL(MAX(id_noficaciones), 0)+1,
+    u.correo,
+    'Pago rechazado'
+    mp.metodo_pago
+FROM Usuarios u
+JOIN Suscripciones s ON s.id_usuario = u.id_usuario
+JOIN MetodosPago mp ON mp.id_pago =: NEW.id_pago, Notificaciones
+WHERE s.codigo =: NEW.codigo_suscripcion;
+END;
+
+-- T4: Pago aprobado, suscripción pasa a 'activa'
+CREATE TRIGGER trg_aprobar_pago
+AFTER UPDATE OF estado ON Pagos
+FOR EACH ROW
+WHEN (NEW.estado = 'aprobado')
+BEGIN
+    UPDATE Suscripciones
+    SET estado = 'activa'
+    WHERE codigo =: NEW.codigo_suscripcion;
+END;
