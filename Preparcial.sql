@@ -72,3 +72,15 @@ CREATE TABLE Problemas (
     nivel_dificultad VARCHAR2(20) NOT NULL, 
     categoria VARCHAR2(10) NOT NULL
 );
+-- T1: Automatizar código, fecha_inicio y estado al insertar suscripción
+CREATE TRIGGER trg_before_insert_suscripcion
+BEFORE INSERT ON Suscripciones
+FOR EACH ROW
+DECLARE
+    v_codigo NUMBER;
+BEGIN
+    SELECT NVL(MAX(codigo), 0) + 1 INTO v_codigo FROM Suscripciones;
+    :NEW.codigo       := v_codigo;
+    :NEW.fecha_inicio := CURRENT_DATE;
+    :NEW.estado       := 'pendiente';
+END trg_before_insert_suscripcion;
