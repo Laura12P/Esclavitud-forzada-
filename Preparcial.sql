@@ -76,11 +76,20 @@ CREATE TABLE Problemas (
 CREATE TRIGGER trg_before_insert_suscripcion
 BEFORE INSERT ON Suscripciones
 FOR EACH ROW
-DECLARE
-    v_codigo NUMBER;
+DECLARE v_codigo NUMBER;
 BEGIN
     SELECT NVL(MAX(codigo), 0) + 1 INTO v_codigo FROM Suscripciones;
     :NEW.codigo       := v_codigo;
     :NEW.fecha_inicio := CURRENT_DATE;
     :NEW.estado       := 'pendiente';
-END trg_before_insert_suscripcion;
+END;
+-- T2: Calcular fecha_fin según duración del plan
+CREATE TRIGGER trg_fecha_fin_suscripcon
+BEFORE INSERT ON Suscripciones
+FOR EACH ROW
+DECLARE v_duracion NUMBER;
+BEGIN 
+    SELECT duracion INTO v_duracion
+    FROM Planes WHERE id_plan =: NEW.id_plan;
+    :NEW.fecha_fin := :NEW.fecha_inicio + v_duracion;
+END;
