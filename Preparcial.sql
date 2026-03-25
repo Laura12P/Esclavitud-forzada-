@@ -122,3 +122,37 @@ BEGIN
     SET estado = 'activa'
     WHERE codigo =: NEW.codigo_suscripcion;
 END;
+
+-- T5: Solo permitir cambio de activa a inactiva si CURRENT_DATE > fecha_fin
+CREATE TRIGGER trg_validar_inactivar_suscripciones
+BEFORE UPDATE OF estado ON Suscripcion
+FOR EACH ROW
+WHEN (OLD.estado = 'activa' AND NEW.estado = 'inactiva')
+BEGIN 
+    IF CURRENT_DATE <=: OLD.fecha_fin THEN
+        :NEW.estado := OLD.estado;
+    END IF;
+END;
+
+-- T6: Pago aprobado no debe tener notificación asociada
+CREATE TRIGGER trg_pago_aprobado_sin_notificacion
+BEFORE INSERT OR UPDATE ON Notificaciones
+FOR EACH ROW
+BEGIN
+    IF (SELECT estado FROM Pagos WHERE id_pago = :NEW.id_pago) = 'aprobado' THEN
+        :NEW.id_pago := NULL;
+    END IF;
+END;
+
+-- T7: Suscripción activa debe tener al menos un pago aprobado
+CREATE TRIGGER trg_suscripcion_activa_con_pago
+AFTER UPDATE OF estado ON Suscripciones
+FOR EACH ROW
+WHEN (NEW.estado = 'activa')
+BEGIN
+    IF (SELECT COUNT(*) FROM Pagos
+        WHERE codigo_suscripcion = :NEW.codigo
+        AND estado = 'aprobado') = 0 THEN
+        :NEW.estado := :OLD.estado;
+    END IF;
+END;
