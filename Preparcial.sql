@@ -206,27 +206,23 @@ END;
 
 --## Tercer punto: Integridad procedimental CRUD Mantener Suscripcion
 
--- T1: Automatizar codigo, fecha_inicio y estado al insertar suscripcion
+-- T1 + T2: Automatizar codigo, fecha_inicio, estado y fecha_fin al insertar suscripcion
+-- Se fusionan en un solo trigger BEFORE INSERT para garantizar que fecha_inicio
+-- ya este asignada cuando se calcule fecha_fin, ya que Oracle no garantiza
+-- el orden de ejecucion entre dos triggers del mismo evento sobre la misma tabla.
+
 CREATE OR REPLACE TRIGGER trg_before_insert_suscripcion
 BEFORE INSERT ON Suscripciones
 FOR EACH ROW
 DECLARE
-    v_codigo NUMBER;
+    v_codigo   NUMBER;
+    v_duracion NUMBER;
 BEGIN
     SELECT NVL(MAX(codigo), 0) + 1 INTO v_codigo FROM Suscripciones;
     :NEW.codigo       := v_codigo;
     :NEW.fecha_inicio := CURRENT_DATE;
     :NEW.estado       := 'pendiente';
-END;
-/
-
--- T2: Calcular fecha_fin segun duracion del plan
-CREATE OR REPLACE TRIGGER trg_fecha_fin_suscripcion
-BEFORE INSERT ON Suscripciones
-FOR EACH ROW
-DECLARE
-    v_duracion NUMBER;
-BEGIN
+ 
     SELECT duracion INTO v_duracion
     FROM Planes WHERE id_plan = :NEW.id_plan;
     :NEW.fecha_fin := :NEW.fecha_inicio + v_duracion;
