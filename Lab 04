@@ -401,25 +401,28 @@ INSERT INTO Encuesta (idEncuesta, criterioEvaluado, presupuestoDisponible, valor
     VALUES (10, 'nulla ultrices aliquet',    NULL, NULL, TO_DATE('2025-03-23', 'YYYY-MM-DD'), TO_DATE('2025-04-23', 'YYYY-MM-DD'));
  
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (1,  TO_DATE('2025-06-27', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V1',  'S1', 1);
+VALUES (1,  TO_DATE('2025-06-27', 'YYYY-MM-DD'), 125.6, 3, 'OK', 2, 'Valido', 'V1',  'S1', 1);
+
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (2,  TO_DATE('2026-02-25', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V2',  'S2', 2);
+VALUES (2,  TO_DATE('2026-02-25', 'YYYY-MM-DD'), 140.2, 5, NULL, 3, NULL, 'V2',  'S2', 2);
+
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (3,  TO_DATE('2025-08-22', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V3',  'S3', 3);
+VALUES (3,  TO_DATE('2025-08-22', 'YYYY-MM-DD'), 118.9, 2, 'OK', 4, 'Buen tiempo', 'V3',  'S3', 3);
+
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (4,  TO_DATE('2025-12-13', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V4',  'S1', 4);
+VALUES (4,  TO_DATE('2025-12-13', 'YYYY-MM-DD'), 160.0, 8, NULL, 5, NULL, 'V4',  'S1', 4);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (5,  TO_DATE('2025-07-21', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V5',  'S2', 5);
+VALUES (5,  TO_DATE('2025-07-21', 'YYYY-MM-DD'), 132.4, 4, NULL, 3, NULL, 'V5',  'S2', 5);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (6,  TO_DATE('2025-06-01', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V6',  'S3', 6);
+VALUES (6,  TO_DATE('2025-06-01', 'YYYY-MM-DD'), 110.7, 1, 'OK', 2, NULL, 'V6',  'S3', 6);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (7,  TO_DATE('2025-12-04', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V7',  'S1', 7);
+VALUES (7,  TO_DATE('2025-12-04', 'YYYY-MM-DD'), 170.3, 10, NULL, 5, 'Revisar', 'V7',  'S1', 7);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (8,  TO_DATE('2026-01-05', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V8',  'S2', 8);
+VALUES (8,  TO_DATE('2026-01-05', 'YYYY-MM-DD'), 145.8, 6, NULL, 4, NULL, 'V8',  'S2', 8);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (9,  TO_DATE('2026-01-03', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V9',  'S3', 9);
+VALUES (9,  TO_DATE('2026-01-03', 'YYYY-MM-DD'), 138.0, 5, 'OK', 3, 'Valido', 'V9',  'S3', 9);
 INSERT INTO Registro (numero, fecha, tiempo, posicion, revision, dificultad, comentarios, nombreVersion, nombreSegmento, idParticipante)
-    VALUES (10, TO_DATE('2025-10-24', 'YYYY-MM-DD'), NULL, NULL, NULL, NULL, 'Valido', 'V10', 'S1', 10);
+VALUES (10, TO_DATE('2025-10-24', 'YYYY-MM-DD'), 155.5, 7, NULL, 4, NULL, 'V10', 'S1', 10);
  
  
 --- CICLO 1: TuplasOK
