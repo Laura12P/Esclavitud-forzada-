@@ -357,11 +357,133 @@ ALTER TABLE FiltroBusqueda
 
 ALTER TABLE FiltroBusqueda
     ADD CONSTRAINT fk_FB_Busqueda FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
-----------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------RESTRICCIONES PROCEDIMENTALES (TRIGGERS)----------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------
--- #RESTRICCIONES DECLARATIVAS
 
+-------------------------------------------------------------------------------------------------------
+--------------------------------- Consultas -----------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
+
+-- 1. Usuarios que escucharon canciones del artista (últimos 30 días)
+SELECT c.tituloCancion, COUNT(h.idRegistro) AS reproducciones, COUNT(DISTINCT h.idUsuario) AS total_oyentes
+FROM Cancion c
+JOIN Historial_Musical h ON c.idCancion = h.idCancion
+WHERE c.idArtista = :idArtista
+AND h.fechaRegistro >= SYSDATE - 30
+GROUP BY c.tituloCancion
+ORDER BY total_oyentes DESC;
+
+-- 2. Artistas más escuchados del último mes
+SELECT a.nombre, g.nombreGenero, COUNT(h.idRegistro) AS total_reproducciones
+FROM Artista a
+JOIN Cancion c ON a.idArtista = c.idArtista
+JOIN Historial_Musical h ON c.idCancion = h.idCancion
+JOIN Genero g ON c.idGenero = g.idGenero
+WHERE h.fechaRegistro >= ADD_MONTHS(SYSDATE, -1) -- Acá la funcion regresaria la fecha con la cantidad de meses agregados, pero le quitamos uno para que la consulta de.
+GROUP BY a.nombre, g.nombreGenero
+ORDER BY total_reproducciones DESC;
+
+-- 3. Usuarios que más escuchan al artista
+SELECT u.nombreUsuario, COUNT(h.idRegistro) AS veces_escuchado
+FROM Usuario u
+JOIN Historial_Musical h ON u.idUsuario = h.idUsuario
+JOIN Cancion c ON h.idCancion = c.idCancion
+WHERE c.idArtista = :idArtista
+GROUP BY u.nombreUsuario
+ORDER BY veces_escuchado DESC;
+
+-- 4. Historial de búsquedas último mes
+SELECT hb.terminoBusqueda, hb.fechaBusqueda, fb.exito
+FROM HistorialBusqueda hb
+JOIN FiltroBusqueda fb ON hb.idBusqueda = fb.idBusqueda
+WHERE hb.fechaBusqueda >= SYSDATE - 30
+ORDER BY hb.fechaBusqueda DESC;
+
+-- 5. Búsquedas fallidas
+SELECT hb.terminoBusqueda, COUNT(*) AS intentos_fallidos, MAX(hb.fechaBusqueda) AS ultimo_intento
+FROM HistorialBusqueda hb
+JOIN FiltroBusqueda fb ON hb.idBusqueda = fb.idBusqueda
+WHERE fb.exito = 0
+GROUP BY hb.terminoBusqueda
+ORDER BY intentos_fallidos DESC;
+
+-- 6. Reportes último mes
+SELECT u.nombreUsuario, r.motivoReporte, r.descripcionReporte, r.estadoReporte, r.fechaReporte
+FROM Reporte r
+JOIN Usuario u ON r.idUsuarioReportado = u.idUsuario
+WHERE r.fechaReporte >= SYSDATE - 30
+ORDER BY r.fechaReporte DESC;
+
+-- 7. Sanciones activas
+SELECT tipoSancion, motivoSancion, fechaInicio, fechaFin
+FROM Sancion
+WHERE fechaFin > SYSDATE OR fechaFin IS NULL
+ORDER BY fechaInicio DESC;
+
+-- 8. Usuarios con más reportes
+SELECT u.nombreUsuario, COUNT(r.idReporte) AS total_reportes
+FROM Usuario u
+JOIN Reporte r ON u.idUsuario = r.idUsuarioReportado
+GROUP BY u.nombreUsuario
+ORDER BY total_reportes DESC;
+
+-- 9. Publicaciones con más likes
+SELECT p.contenido, ptc.tipoContenido, p.likes, p.comentarios
+FROM Publicacion p
+LEFT JOIN Publicacion_TipoContenido ptc 
+    ON p.idPublicacion = ptc.idPublicacion
+WHERE p.idUsuario = :idUsuario AND p.fechaPublicacion >= SYSDATE - 30
+ORDER BY p.likes DESC;
+
+-- 10. Historial musical
+SELECT notaPersonal, emocion, fechaRegistro
+FROM Historial_Musical
+WHERE idUsuario = :idUsuario AND fechaRegistro >= SYSDATE - 30
+ORDER BY fechaRegistro DESC;
+
+-- 11. Cantidad de publicaciones
+SELECT COUNT(*) AS total_publicaciones, MAX(fechaPublicacion) AS ultima_publicacion
+FROM Publicacion
+WHERE idUsuario = :idUsuario
+AND fechaPublicacion BETWEEN :fechaInicio AND :fechaFin;
+
+-- 12. Usuarios bloqueados
+SELECT u.nombreUsuario, ln.fechaBloqueo, ln.motivoBloqueo
+FROM ListaNegra ln
+JOIN Usuario u ON ln.idUsuarioDestino = u.idUsuario
+WHERE ln.idUsuarioOrigen = :idUsuario
+ORDER BY ln.fechaBloqueo DESC;
+
+-- 13. Configuración usuario
+SELECT quienVeHistorial, perfilPublico, notificacionesActivas
+FROM ConfiguracionUsuario
+WHERE idUsuario = :idUsuario;
+
+-- 14. Veces bloqueado
+SELECT COUNT(*) AS veces_bloqueado, MAX(fechaBloqueo) AS ultimo_bloqueo
+FROM ListaNegra
+WHERE idUsuarioDestino = :idUsuario;
+
+-- 15. Recomendaciones recibidas
+SELECT mensajeRecomendacion, tipoRecomendacion, fechaRecomendacion
+FROM Recomendacion
+WHERE idUsuarioDestino = :idUsuario AND fechaRecomendacion >= SYSDATE - 30
+ORDER BY fechaRecomendacion DESC;
+
+-- 16. Recomendaciones por tipo
+SELECT tipoRecomendacion, COUNT(*) AS total
+FROM Recomendacion
+WHERE idUsuarioDestino = :idUsuario
+GROUP BY tipoRecomendacion;
+
+-- 17. Quién más recomienda
+SELECT u.nombreUsuario, COUNT(*) AS total_recomendaciones, MAX(r.fechaRecomendacion) AS ultima_fecha
+FROM Recomendacion r
+JOIN Usuario u ON r.idUsuario = u.idUsuario
+WHERE r.idUsuarioDestino = :idUsuario
+GROUP BY u.nombreUsuario
+ORDER BY total_recomendaciones DESC;
+----------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------RESTRICCIONES DECLARATIVAS------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
 -- Usuario_Streaming
 ALTER TABLE Usuario_Streaming
     ADD CONSTRAINT ck_US_streaming          
@@ -434,322 +556,262 @@ ALTER TABLE FiltroBusqueda
 --------------------------------------------------RESTRICCIONES PROCEDIMENTALES (TRIGGERS)----------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-----------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------- Mantener Catálogo de Canciones ------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------
--- Trigger 1: Validar que la canción tenga al menos un artista vinculado
-CREATE TRIGGER trg_Cancion_TieneArtista
-BEFORE INSERT
-ON Cancion
+------------------------------------------------------------------
+-------------------- MANTENER CATÁLOGO CANCIONES -----------------
+------------------------------------------------------------------
+
+-- idCancion incremental automático, año no puede ser futuro
+CREATE OR REPLACE TRIGGER trg_cancion_insert
+BEFORE INSERT ON Cancion
 FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
 BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Artista
-    WHERE idArtista = :NEW.idArtista;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20004,
-            'La canción debe tener al menos un artista vinculado.');
+    SELECT MAX(idCancion) + 1 INTO :NEW.idCancion FROM Cancion;
+
+    IF EXTRACT(YEAR FROM :NEW.año) > EXTRACT(YEAR FROM SYSDATE) THEN
+        RAISE_APPLICATION_ERROR(-20001,'Año no puede ser futuro');
     END IF;
 END;
+/
 
-
--- Trigger 2: Validar que el año de la canción no sea futuro
-CREATE TRIGGER trg_Cancion_AnoNoFuturo
-BEFORE INSERT OR UPDATE OF ano
-ON Cancion
+-- regla3: no modificar id ni artista
+CREATE OR REPLACE TRIGGER trg_cancion_update
+BEFORE UPDATE ON Cancion
 FOR EACH ROW
-DECLARE
 BEGIN
-    IF :NEW.ano > SYSDATE THEN
-        RAISE_APPLICATION_ERROR(-20005, 
-            'El año de la canción no puede ser una fecha futura.');
+    IF :NEW.idCancion <> :OLD.idCancion THEN
+        RAISE_APPLICATION_ERROR(-20002,'No modificar idCancion');
     END IF;
-END;
 
--- Trigger 3: Verificar que idCancion exista en Cancion antes de asociar
-CREATE TRIGGER trg_CG_CancionExiste
-BEFORE INSERT
-ON Cancion_Genero
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Cancion WHERE idCancion = :NEW.idCancion;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20006, 
-            'La canción indicada no existe.');
-    END IF;
-END;
-
--- Trigger 4: Verificar que idGenero exista en Genero antes de asociar
-CREATE TRIGGER trg_CG_GeneroExiste
-BEFORE INSERT
-ON Cancion_Genero
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Genero WHERE idGenero = :NEW.idGenero;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20007, 
-            'El género indicado no existe.');
-    END IF;
-END;
-
--- Trigger 5: Generar idCancion de forma incremental automática
-CREATE TRIGGER trg_Cancion_IdIncremental
-BEFORE INSERT
-ON Cancion
-FOR EACH ROW
-DECLARE
-BEGIN
-    SELECT NVL(MAX(idCancion), 0) + 1 INTO :NEW.idCancion
-    FROM Cancion;
-END;
-
--- Trigger 6: Evitar modificación del idArtista original de una canción
-CREATE TRIGGER trg_Cancion_NoModificarArtista
-BEFORE UPDATE OF idArtista
-ON Cancion
-FOR EACH ROW
-DECLARE
-BEGIN
     IF :NEW.idArtista <> :OLD.idArtista THEN
-        RAISE_APPLICATION_ERROR(-20030,
-            'No se puede modificar el artista original de una canción ya registrada.');
+        RAISE_APPLICATION_ERROR(-20003,'No modificar artista');
     END IF;
 END;
+/
 
--- Trigger 7: Evitar modificación del idCancion
-CREATE TRIGGER trg_Cancion_NoModificarId
-BEFORE UPDATE OF idCancion
-ON Cancion
+------------------------------------------------------------------
+-------------------- REGISTRAR RECOMENDACIÓN ---------------------
+------------------------------------------------------------------
+
+-- id automático, fecha automática, no auto recomendación
+CREATE OR REPLACE TRIGGER trg_reco_insert
+BEFORE INSERT ON Recomendacion
 FOR EACH ROW
-DECLARE
 BEGIN
-    IF :NEW.idCancion <> :OLD.idCancion THEN
-        RAISE_APPLICATION_ERROR(-20031,
-            'No se puede modificar el ID de una canción ya registrada.');
-    END IF;
-END;
+    SELECT NVL(MAX(idRecomendacion),0)+1 INTO :NEW.idRecomendacion FROM Recomendacion;
 
-
-----------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------- Registrar Recomendación  ------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------
-
--- Trigger 1: Asignar fecha de recomendación automáticamente e inicializar visualizada en 0
-CREATE TRIGGER trg_Reco_InsertarDefaults
-BEFORE INSERT
-ON Recomendacion
-FOR EACH ROW
-DECLARE
-BEGIN
     :NEW.fechaRecomendacion := SYSDATE;
-    :NEW.visualizada := 0;
-END;
+    :NEW.visualizacion := 0;
 
--- Trigger 2: Evitar que un usuario se recomiende a sí mismo
-CREATE TRIGGER trg_Reco_NoAutoEnvio
-BEFORE INSERT
-ON Recomendacion
-FOR EACH ROW
-DECLARE
-BEGIN
     IF :NEW.idUsuario = :NEW.idUsuarioDestino THEN
-        RAISE_APPLICATION_ERROR(-20032,
-            'Un usuario no puede enviarse una recomendación a sí mismo.');
+        RAISE_APPLICATION_ERROR(-20004,'No auto recomendación');
     END IF;
 END;
+/
 
--- Trigger 3: Evitar modificación del destinatario y la canción
-CREATE TRIGGER trg_Reco_NoModificarDestinatarioCancion
-BEFORE UPDATE OF idUsuarioDestino, idCancion
-ON Recomendacion
+-- no modificar destinatario ni canción
+CREATE OR REPLACE TRIGGER trg_reco_update
+BEFORE UPDATE ON Recomendacion
 FOR EACH ROW
-DECLARE
 BEGIN
-    IF :NEW.idUsuarioDestino <> :OLD.idUsuarioDestino THEN
-        RAISE_APPLICATION_ERROR(-20033,
-            'No se puede modificar el destinatario de una recomendación ya registrada.');
-    END IF;
-    IF :NEW.idCancion <> :OLD.idCancion THEN
-        RAISE_APPLICATION_ERROR(-20034,
-            'No se puede modificar la canción de una recomendación ya registrada.');
+    IF :NEW.idUsuarioDestino <> :OLD.idUsuarioDestino OR:NEW.idCancion <> :OLD.idCancion THEN
+        RAISE_APPLICATION_ERROR(-20005,'No modificar destinatario o canción');
     END IF;
 END;
+/
 
--- Trigger 4: Evitar eliminación si ya fue visualizada
-CREATE TRIGGER trg_Reco_NoEliminarVisualizada
-BEFORE DELETE
-ON Recomendacion
+-- no eliminar si visualizada
+CREATE OR REPLACE TRIGGER trg_reco_delete
+BEFORE DELETE ON Recomendacion
 FOR EACH ROW
-DECLARE
 BEGIN
-    IF :OLD.visualizada = 1 THEN
-        RAISE_APPLICATION_ERROR(-20035,
-            'No se puede eliminar una recomendación que ya fue visualizada por el destinatario.');
+    IF :OLD.visualizacion = 1 THEN
+        RAISE_APPLICATION_ERROR(-20006,'No eliminar recomendación vista');
     END IF;
 END;
+/
 
--- Trigger 5: Verificar que la canción recomendada exista
-CREATE TRIGGER trg_Reco_CancionExiste
-BEFORE INSERT
-ON Recomendacion
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Cancion
-    WHERE idCancion = :NEW.idCancion;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20036,
-            'La canción indicada no existe y no puede ser recomendada.');
-    END IF;
-END;
+------------------------------------------------------------------
+-------------------- MANTENER PUBLICACIÓN ------------------------
+------------------------------------------------------------------
 
-----------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------- Mantener Publicación ------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------
--- Trigger 1: Inicializar likes y comentarios en 0 al crear publicación
-CREATE TRIGGER trg_Pub_InicializarContadores
-BEFORE INSERT
-ON Publicacion
+-- id automático, fecha automática, likes en 0, contenido obligatorio
+CREATE OR REPLACE TRIGGER trg_pub_insert
+BEFORE INSERT ON Publicacion
 FOR EACH ROW
-DECLARE
 BEGIN
-    :NEW.likes      := 0;
-    :NEW.comentarios := 0;
-END;
+    SELECT NVL(MAX(idPublicacion),0)+1 INTO :NEW.idPublicacion FROM Publicacion;
 
--- Trigger 2: Generar idPublicacion incremental y asignar fecha automática
-CREATE TRIGGER trg_Pub_InsertarDefaults
-BEFORE INSERT
-ON Publicacion
-FOR EACH ROW
-DECLARE
-BEGIN
-    SELECT NVL(MAX(idPublicacion), 0) + 1 INTO :NEW.idPublicacion
-    FROM Publicacion;
     :NEW.fechaPublicacion := SYSDATE;
-END;
+    :NEW.likes := 0;
 
--- Trigger 3: Validar que la publicación tenga texto o canción adjunta
-CREATE TRIGGER trg_Pub_ContenidoObligatorio
-BEFORE INSERT
-ON Publicacion
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF (TRIM(:NEW.contenido) IS NULL OR TRIM(:NEW.contenido) = '')
+    IF (:NEW.contenido IS NULL OR TRIM(:NEW.contenido) = '')
         AND :NEW.idCancionAdjunta IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20037,
-            'La publicación debe contener texto o una canción adjunta obligatoriamente.');
+        RAISE_APPLICATION_ERROR(-20007,'Debe tener contenido o canción');
     END IF;
 END;
+/
 
--- Trigger 4: Evitar modificación de la canción adjunta una vez publicada
-CREATE TRIGGER trg_Pub_NoModificarCancion
-BEFORE UPDATE OF idCancionAdjunta
-ON Publicacion
+-- no modificar canción adjunta
+CREATE OR REPLACE TRIGGER trg_pub_update
+BEFORE UPDATE ON Publicacion
 FOR EACH ROW
-DECLARE
 BEGIN
     IF :NEW.idCancionAdjunta <> :OLD.idCancionAdjunta THEN
-        RAISE_APPLICATION_ERROR(-20038,
-            'No se puede modificar la canción adjunta de una publicación ya registrada.');
+        RAISE_APPLICATION_ERROR(-20008,'No modificar canción adjunta');
     END IF;
 END;
+/
 
--- Trigger 5: Al eliminar publicación, eliminar comentarios asociados
-CREATE TRIGGER trg_Pub_EliminarCascada
-BEFORE DELETE
-ON Publicacion
-FOR EACH ROW
-DECLARE
-BEGIN
-    DELETE FROM Publicacion_TipoContenido
-    WHERE idPublicacion = :OLD.idPublicacion;
-END;
+------------------------------------------------------------------------------
+-------------------- MANTENER PERFIL DE USUARIO ------------------------------
+------------------------------------------------------------------------------
 
-----------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------- Mantener Perfil De Usuario ------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------
--- Trigger 1: Validar que la contraseña tenga al menos 8 caracteres
-CREATE TRIGGER trg_Usuario_ContrasenaSegura
-BEFORE INSERT OR UPDATE OF contrasena
-ON Usuario
+-- d automático, fecha automática, contraseña segura, usuario sin espacios
+CREATE OR REPLACE TRIGGER trg_usuario_insert
+BEFORE INSERT ON Usuario
 FOR EACH ROW
-DECLARE
 BEGIN
-    IF LENGTH(:NEW.contrasena) < 8 THEN
-        RAISE_APPLICATION_ERROR(-20008, 
-            'La contraseña debe tener al menos 8 caracteres.');
-    END IF;
-END;
+    SELECT NVL(MAX(idUsuario),0)+1 INTO :NEW.idUsuario FROM Usuario;
 
---Trigger 2: Evitar que el nombreUsuario contenga espacios
-CREATE TRIGGER trg_Usuario_NombreSinEspacios
-BEFORE INSERT OR UPDATE OF nombreUsuario
-ON Usuario
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF INSTR(:NEW.nombreUsuario, ' ') > 0 THEN
-        RAISE_APPLICATION_ERROR(-20008,
-            'El nombre de usuario no puede contener espacios.');
-    END IF;
-END;
-
--- Trigger 3: Asignar fecha de registro automáticamente
-CREATE TRIGGER trg_Usuario_FechaRegistroAuto
-BEFORE INSERT
-ON Usuario
-FOR EACH ROW
-DECLARE
-BEGIN
     :NEW.fechaRegistro := SYSDATE;
-END;
 
--- Trigger 4: Verificar que el correo no esté en uso al modificarlo
-CREATE TRIGGER trg_Usuario_CorreoUnicoUpdate
-BEFORE UPDATE OF correo
-ON Usuario
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Usuario
-    WHERE correo = :NEW.correo
-      AND idUsuario <> :OLD.idUsuario;
-    IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20039,
-            'El correo ingresado ya está en uso por otro usuario.');
+    IF LENGTH(:NEW.contraseña) < 8 THEN
+        RAISE_APPLICATION_ERROR(-20009,'Contraseña insegura');
+    END IF;
+
+    IF INSTR(:NEW.nombreUsuario,' ') > 0 THEN
+        RAISE_APPLICATION_ERROR(-20010,'Usuario no puede tener espacios');
     END IF;
 END;
+/
 
--- Trigger 5: Evitar eliminación si el usuario tiene membresía activa
-CREATE TRIGGER trg_Usuario_NoEliminarConMembresia
-BEFORE DELETE
-ON Usuario
+-----------------------------------------------------------------------------------
+-------------------- MANTENER BÚSQUEDAS USUARIO -----------------------------------
+-----------------------------------------------------------------------------------
+
+-- idFiltro automático, fecha no futura
+CREATE OR REPLACE TRIGGER trg_filtro_insert
+BEFORE INSERT ON FiltroBusqueda
 FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
 BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM UsuarioMembresia
-    WHERE idUsuario = :OLD.idUsuario
-      AND estadoMembresia = 'activa';
-    IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20040,
-            'No se puede eliminar un usuario con una membresía activa.');
+    SELECT NVL(MAX(idFiltro),0)+1 INTO :NEW.idFiltro FROM FiltroBusqueda;
+
+    IF :NEW.fechaUso > SYSDATE THEN
+        RAISE_APPLICATION_ERROR(-20011,'Fecha inválida');
     END IF;
 END;
+/
 
+--  no modificar ids ni fechas
+CREATE OR REPLACE TRIGGER trg_filtro_update
+BEFORE UPDATE ON FiltroBusqueda
+FOR EACH ROW
+BEGIN
+    IF :NEW.idFiltro <> :OLD.idFiltro OR
+       :NEW.fechaUso <> :OLD.fechaUso THEN
+        RAISE_APPLICATION_ERROR(-20012,'No modificar id o fecha');
+    END IF;
+END;
+/
 
+-- no eliminar si exito = 1
+CREATE OR REPLACE TRIGGER trg_filtro_delete
+BEFORE DELETE ON FiltroBusqueda
+FOR EACH ROW
+BEGIN
+    IF :OLD.exito = 1 THEN
+        RAISE_APPLICATION_ERROR(-20013,'No eliminar filtro exitoso');
+    END IF;
+END;
+/
+
+-----------------------------------------------------------------------------
+---------------------CONFIGURACIÓN DE USUARIO -------------------------------
+-----------------------------------------------------------------------------
+
+-- id automático
+CREATE OR REPLACE TRIGGER trg_config_insert
+BEFORE INSERT ON ConfiguracionUsuario
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idConfiguracion),0) +1 INTO :NEW.idConfiguracion FROM ConfiguracionUsuario;
+END;
+/
+
+-- no modificar lista negra
+CREATE OR REPLACE TRIGGER trg_lista_negra_update
+BEFORE UPDATE ON ListaNegra
+FOR EACH ROW
+BEGIN
+    RAISE_APPLICATION_ERROR(-20014,'No modificar bloqueos');
+END;
+/
+
+-------------------------------------------------------------------------------
+---------------------- MANTENER REPORTES Y SANCIONES --------------------------
+-------------------------------------------------------------------------------
+
+-- id reporte automático
+CREATE OR REPLACE TRIGGER trg_reporte_insert
+BEFORE INSERT ON Reporte
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idReporte),0)+1 INTO :NEW.idReporte FROM Reporte;
+END;
+/
+
+-- id sanción automático
+CREATE OR REPLACE TRIGGER trg_sancion_insert
+BEFORE INSERT ON Sancion
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idSancion),0)+1 INTO :NEW.idSancion FROM Sancion;
+END;
+/
+
+-- no eliminar reporte con sanción
+CREATE OR REPLACE TRIGGER trg_reporte_delete
+BEFORE DELETE ON Reporte
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM Sancion WHERE idReporte = :OLD.idReporte;
+
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20015,'Reporte tiene sanción');
+    END IF;
+END;
+/
+
+--  eliminar sanción solo si vencida
+CREATE OR REPLACE TRIGGER trg_sancion_delete
+BEFORE DELETE ON Sancion
+FOR EACH ROW
+BEGIN
+    IF :OLD.fechaFin IS NULL OR :OLD.fechaFin > SYSDATE THEN
+        RAISE_APPLICATION_ERROR(-20016,'Sanción no vencida');
+    END IF;
+END;
+/
+------------------------------------------------------------------
+-------------------- XDISPARADORES -------------------------------
+------------------------------------------------------------------
+
+DROP TRIGGER trg_cancion_insert;
+DROP TRIGGER trg_cancion_update;
+DROP TRIGGER trg_reco_insert;
+DROP TRIGGER trg_reco_update;
+DROP TRIGGER trg_reco_delete;
+DROP TRIGGER trg_pub_insert;
+DROP TRIGGER trg_pub_update;
+DROP TRIGGER trg_usuario_insert;
+DROP TRIGGER trg_filtro_insert;
+DROP TRIGGER trg_filtro_update;
+DROP TRIGGER trg_filtro_delete;
+DROP TRIGGER trg_config_insert;
+DROP TRIGGER trg_lista_negra_update;
+DROP TRIGGER trg_reporte_insert;
+DROP TRIGGER trg_sancion_insert;
+DROP TRIGGER trg_reporte_delete;
+DROP TRIGGER trg_sancion_delete;
