@@ -44,11 +44,6 @@ CREATE TABLE Cancion (
     idArtista       NUMBER(10)      NOT NULL,
     idGenero        NUMBER(10)      NOT NULL
 );
--- Relación muchos a muchos
-CREATE TABLE Cancion_Genero (
-    idCancion       NUMBER(10)      NOT NULL,
-    idGenero        NUMBER(10)      NOT NULL
-);
 
 -- GRAN CONCEPTO: USUARIO
 
@@ -358,9 +353,8 @@ ALTER TABLE FiltroBusqueda
 ALTER TABLE FiltroBusqueda
     ADD CONSTRAINT fk_FB_Busqueda FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
 
--------------------------------------------------------------------------------------------------------
+
 --------------------------------- Consultas -----------------------------------------------------------
--------------------------------------------------------------------------------------------------------
 
 -- 1. Usuarios que escucharon canciones del artista (últimos 30 días)
 SELECT c.tituloCancion, COUNT(h.idRegistro) AS reproducciones, COUNT(DISTINCT h.idUsuario) AS total_oyentes
