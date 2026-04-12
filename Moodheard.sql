@@ -401,68 +401,11 @@ ALTER TABLE FiltroBusqueda
 ----------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------RESTRICCIONES PROCEDIMENTALES (TRIGGERS)----------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------
---Genero
--- Trigger 1: Convertir nombreGenero a minúsculas al insertar/actualizar
-CREATE TRIGGER trg_Genero_NombreLower
-BEFORE INSERT OR UPDATE OF nombreGenero
-ON Genero
-FOR EACH ROW
-DECLARE
-BEGIN
-    :NEW.nombreGenero := LOWER(:NEW.nombreGenero);
-END;
 
--- Trigger 2: Evitar descripciones vacias
-CREATE TRIGGER trg_Genero_DescripcionNoVacia
-BEFORE INSERT OR UPDATE OF descripcion
-ON Genero
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF TRIM(:NEW.descripcion) IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 
-            'La descripción del género no puede estar vacía o contener solo espacios.');
-    END IF;
-END;
-
------------------------------------------------------------------------------------------------------------------------------------------------
--- Artista
-
--- Trigger 3: Validar que el año del debut no sea una fecha que aun no haya pasado
-CREATE TRIGGER trg_Artista_DebutNoFuturo
-BEFORE INSERT OR UPDATE OF anoDebut
-ON Artista
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF :NEW.anoDebut > SYSDATE THEN
-        RAISE_APPLICATION_ERROR(-20002, 
-            'La fecha de debut del artista no puede ser futura.');
-    END IF;
-END;
-
--- Trigger 4: Evitar nombres repetidos entre artistas
-CREATE TRIGGER trg_Artista_NombreUnico
-BEFORE INSERT OR UPDATE OF nombre
-ON Artista
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Artista
-    WHERE LOWER(nombre) = LOWER(:NEW.nombre)
-      AND idArtista <> :NEW.idArtista;
-    IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20003,
-            'Ya existe un artista registrado con ese nombre.');
-    END IF;
-END;
-
------------------------------------------------------------------------------------------------------------------------------------------------
--- Canción
-
--- Trigger 5: Validar que la canción tenga al menos un artista vinculado
+----------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------- Mantener Catálogo de Canciones ------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
+-- Trigger 1: Validar que la canción tenga al menos un artista vinculado
 CREATE TRIGGER trg_Cancion_TieneArtista
 BEFORE INSERT
 ON Cancion
@@ -480,7 +423,7 @@ BEGIN
 END;
 
 
--- Trigger 6: Validar que el año de la canción no sea futuro
+-- Trigger 2: Validar que el año de la canción no sea futuro
 CREATE TRIGGER trg_Cancion_AnoNoFuturo
 BEFORE INSERT OR UPDATE OF ano
 ON Cancion
@@ -493,10 +436,7 @@ BEGIN
     END IF;
 END;
 
------------------------------------------------------------------------------------------------------------------------------------------------
--- Cancion_Genero
-
--- Trigger 7: Verificar que idCancion exista en Cancion antes de asociar
+-- Trigger 3: Verificar que idCancion exista en Cancion antes de asociar
 CREATE TRIGGER trg_CG_CancionExiste
 BEFORE INSERT
 ON Cancion_Genero
@@ -512,7 +452,7 @@ BEGIN
     END IF;
 END;
 
--- Trigger 8: Verificar que idGenero exista en Genero antes de asociar
+-- Trigger 4: Verificar que idGenero exista en Genero antes de asociar
 CREATE TRIGGER trg_CG_GeneroExiste
 BEFORE INSERT
 ON Cancion_Genero
@@ -528,9 +468,187 @@ BEGIN
     END IF;
 END;
 
------------------------------------------------------------------------------
--- Usuario
--- Trigger 9: Validar que la contraseña tenga al menos 8 caracteres
+-- Trigger 5: Generar idCancion de forma incremental automática
+CREATE TRIGGER trg_Cancion_IdIncremental
+BEFORE INSERT
+ON Cancion
+FOR EACH ROW
+DECLARE
+BEGIN
+    SELECT NVL(MAX(idCancion), 0) + 1 INTO :NEW.idCancion
+    FROM Cancion;
+END;
+
+-- Trigger 6: Evitar modificación del idArtista original de una canción
+CREATE TRIGGER trg_Cancion_NoModificarArtista
+BEFORE UPDATE OF idArtista
+ON Cancion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :NEW.idArtista <> :OLD.idArtista THEN
+        RAISE_APPLICATION_ERROR(-20030,
+            'No se puede modificar el artista original de una canción ya registrada.');
+    END IF;
+END;
+
+-- Trigger 7: Evitar modificación del idCancion
+CREATE TRIGGER trg_Cancion_NoModificarId
+BEFORE UPDATE OF idCancion
+ON Cancion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :NEW.idCancion <> :OLD.idCancion THEN
+        RAISE_APPLICATION_ERROR(-20031,
+            'No se puede modificar el ID de una canción ya registrada.');
+    END IF;
+END;
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------- Registrar Recomendación  ------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Trigger 1: Asignar fecha de recomendación automáticamente e inicializar visualizada en 0
+CREATE TRIGGER trg_Reco_InsertarDefaults
+BEFORE INSERT
+ON Recomendacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    :NEW.fechaRecomendacion := SYSDATE;
+    :NEW.visualizada := 0;
+END;
+
+-- Trigger 2: Evitar que un usuario se recomiende a sí mismo
+CREATE TRIGGER trg_Reco_NoAutoEnvio
+BEFORE INSERT
+ON Recomendacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :NEW.idUsuario = :NEW.idUsuarioDestino THEN
+        RAISE_APPLICATION_ERROR(-20032,
+            'Un usuario no puede enviarse una recomendación a sí mismo.');
+    END IF;
+END;
+
+-- Trigger 3: Evitar modificación del destinatario y la canción
+CREATE TRIGGER trg_Reco_NoModificarDestinatarioCancion
+BEFORE UPDATE OF idUsuarioDestino, idCancion
+ON Recomendacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :NEW.idUsuarioDestino <> :OLD.idUsuarioDestino THEN
+        RAISE_APPLICATION_ERROR(-20033,
+            'No se puede modificar el destinatario de una recomendación ya registrada.');
+    END IF;
+    IF :NEW.idCancion <> :OLD.idCancion THEN
+        RAISE_APPLICATION_ERROR(-20034,
+            'No se puede modificar la canción de una recomendación ya registrada.');
+    END IF;
+END;
+
+-- Trigger 4: Evitar eliminación si ya fue visualizada
+CREATE TRIGGER trg_Reco_NoEliminarVisualizada
+BEFORE DELETE
+ON Recomendacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :OLD.visualizada = 1 THEN
+        RAISE_APPLICATION_ERROR(-20035,
+            'No se puede eliminar una recomendación que ya fue visualizada por el destinatario.');
+    END IF;
+END;
+
+-- Trigger 5: Verificar que la canción recomendada exista
+CREATE TRIGGER trg_Reco_CancionExiste
+BEFORE INSERT
+ON Recomendacion
+FOR EACH ROW
+DECLARE
+    v_count NUMBER(10);
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM Cancion
+    WHERE idCancion = :NEW.idCancion;
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20036,
+            'La canción indicada no existe y no puede ser recomendada.');
+    END IF;
+END;
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------- Mantener Publicación ------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
+-- Trigger 1: Inicializar likes y comentarios en 0 al crear publicación
+CREATE TRIGGER trg_Pub_InicializarContadores
+BEFORE INSERT
+ON Publicacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    :NEW.likes      := 0;
+    :NEW.comentarios := 0;
+END;
+
+-- Trigger 2: Generar idPublicacion incremental y asignar fecha automática
+CREATE TRIGGER trg_Pub_InsertarDefaults
+BEFORE INSERT
+ON Publicacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    SELECT NVL(MAX(idPublicacion), 0) + 1 INTO :NEW.idPublicacion
+    FROM Publicacion;
+    :NEW.fechaPublicacion := SYSDATE;
+END;
+
+-- Trigger 3: Validar que la publicación tenga texto o canción adjunta
+CREATE TRIGGER trg_Pub_ContenidoObligatorio
+BEFORE INSERT
+ON Publicacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF (TRIM(:NEW.contenido) IS NULL OR TRIM(:NEW.contenido) = '')
+        AND :NEW.idCancionAdjunta IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20037,
+            'La publicación debe contener texto o una canción adjunta obligatoriamente.');
+    END IF;
+END;
+
+-- Trigger 4: Evitar modificación de la canción adjunta una vez publicada
+CREATE TRIGGER trg_Pub_NoModificarCancion
+BEFORE UPDATE OF idCancionAdjunta
+ON Publicacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    IF :NEW.idCancionAdjunta <> :OLD.idCancionAdjunta THEN
+        RAISE_APPLICATION_ERROR(-20038,
+            'No se puede modificar la canción adjunta de una publicación ya registrada.');
+    END IF;
+END;
+
+-- Trigger 5: Al eliminar publicación, eliminar comentarios asociados
+CREATE TRIGGER trg_Pub_EliminarCascada
+BEFORE DELETE
+ON Publicacion
+FOR EACH ROW
+DECLARE
+BEGIN
+    DELETE FROM Publicacion_TipoContenido
+    WHERE idPublicacion = :OLD.idPublicacion;
+END;
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------ Mantener Perfil De Usuario ------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
+-- Trigger 1: Validar que la contraseña tenga al menos 8 caracteres
 CREATE TRIGGER trg_Usuario_ContrasenaSegura
 BEFORE INSERT OR UPDATE OF contrasena
 ON Usuario
@@ -543,7 +661,7 @@ BEGIN
     END IF;
 END;
 
---Trigger 10: Evitar que el nombreUsuario contenga espacios
+--Trigger 2: Evitar que el nombreUsuario contenga espacios
 CREATE TRIGGER trg_Usuario_NombreSinEspacios
 BEFORE INSERT OR UPDATE OF nombreUsuario
 ON Usuario
@@ -555,136 +673,50 @@ BEGIN
             'El nombre de usuario no puede contener espacios.');
     END IF;
 END;
--------------------------------------------------------------------------------
--- USUARIOBASICO
--- Trigger 11: Evitar que un usuario sea Básico y Membresía al mismo tiempo
-CREATE TRIGGER trg_UB_NoMembresiaDual
+
+-- Trigger 3: Asignar fecha de registro automáticamente
+CREATE TRIGGER trg_Usuario_FechaRegistroAuto
 BEFORE INSERT
-ON UsuarioBasico
+ON Usuario
+FOR EACH ROW
+DECLARE
+BEGIN
+    :NEW.fechaRegistro := SYSDATE;
+END;
+
+-- Trigger 4: Verificar que el correo no esté en uso al modificarlo
+CREATE TRIGGER trg_Usuario_CorreoUnicoUpdate
+BEFORE UPDATE OF correo
+ON Usuario
 FOR EACH ROW
 DECLARE
     v_count NUMBER(10);
 BEGIN
     SELECT COUNT(*) INTO v_count
-    FROM UsuarioMembresia WHERE idUsuario = :NEW.idUsuario;
+    FROM Usuario
+    WHERE correo = :NEW.correo
+      AND idUsuario <> :OLD.idUsuario;
     IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20011, 
-            'El usuario ya tiene membresía y no puede ser registrado como básico.');
+        RAISE_APPLICATION_ERROR(-20039,
+            'El correo ingresado ya está en uso por otro usuario.');
     END IF;
 END;
 
--- Trigger 14: Verificar que el idUsuario exista en Usuario
-CREATE TRIGGER trg_UB_UsuarioExiste
-BEFORE INSERT
-ON UsuarioBasico
+-- Trigger 5: Evitar eliminación si el usuario tiene membresía activa
+CREATE TRIGGER trg_Usuario_NoEliminarConMembresia
+BEFORE DELETE
+ON Usuario
 FOR EACH ROW
 DECLARE
     v_count NUMBER(10);
 BEGIN
     SELECT COUNT(*) INTO v_count
-    FROM Usuario WHERE idUsuario = :NEW.idUsuario;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20012, 
-            'No existe un usuario con ese ID para registrar como básico.');
-    END IF;
-END;
-
--------------------------------------------------------------------------------
--- Publicacion
--- Trigger 15: Inicializar likes y comentarios en 0 al crear publicación
-CREATE TRIGGER trg_Pub_InicializarContadores
-BEFORE INSERT
-ON Publicacion
-FOR EACH ROW
-DECLARE
-BEGIN
-    :NEW.likes      := 0;
-    :NEW.comentarios := 0;
-END;
-
-------------------------------------------------------------------------------
--- Historial_Musical
--- Trigger 16:Evitar registros duplicados de la misma canción el mismo día por usuario
-CREATE TRIGGER trg_HM_NoDuplicadoDiario
-BEFORE INSERT
-ON Historial_Musical
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Historial_Musical
-    WHERE idUsuario     = :NEW.idUsuario
-      AND idCancion     = :NEW.idCancion
-      AND TRUNC(fechaRegistro) = TRUNC(:NEW.fechaRegistro);
+    FROM UsuarioMembresia
+    WHERE idUsuario = :OLD.idUsuario
+      AND estadoMembresia = 'activa';
     IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20020, 
-            'Ya existe un registro de esa canción para ese usuario en la misma fecha.');
-    END IF;
-END;
-
--- Trigger 17: Validar que la fecha de registro no sea futura
-CREATE TRIGGER trg_HM_FechaNoFutura
-BEFORE INSERT OR UPDATE OF fechaRegistro
-ON Historial_Musical
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF :NEW.fechaRegistro > SYSDATE THEN
-        RAISE_APPLICATION_ERROR(-20019, 
-            'La fecha de registro del historial no puede ser futura.');
-    END IF;
-END;
-
--------------------------------------------------------------------------------
--- Historial_Periodo
--- Trigger 18: Verificar que el registro padre exista en Historial_Musical
-CREATE TRIGGER trg_HP_RegistroExiste
-BEFORE INSERT
-ON Historial_Periodo
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Historial_Musical WHERE idRegistro = :NEW.idRegistro;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20022, 
-            'El registro de historial musical indicado no existe.');
-    END IF;
-END;
-
--- Trigger 19: Validar que el periodo no sea una fecha futura
-CREATE TRIGGER trg_HP_PeriodoNoFuturo
-BEFORE INSERT OR UPDATE OF periodo
-ON Historial_Periodo
-FOR EACH ROW
-DECLARE
-BEGIN
-    IF :NEW.periodo > SYSDATE THEN
-        RAISE_APPLICATION_ERROR(-20021, 
-            'El período del historial no puede ser una fecha futura.');
-    END IF;
-END;
-
------------------------------------------------------------------------------
--- HISTORIAL_EMOCION
-
--- Trigger 20: Evitar emociones duplicadas por registro
-CREATE TRIGGER trg_HE_NoDuplicadoEmocion
-BEFORE INSERT
-ON Historial_Emocion
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Historial_Emocion
-    WHERE idRegistro = :NEW.idRegistro
-      AND emocion    = :NEW.emocion;
-    IF v_count > 0 THEN
-        RAISE_APPLICATION_ERROR(-20023, 
-            'Esa emoción ya está registrada para este historial.');
+        RAISE_APPLICATION_ERROR(-20040,
+            'No se puede eliminar un usuario con una membresía activa.');
     END IF;
 END;
 
