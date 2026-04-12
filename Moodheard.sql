@@ -573,7 +573,7 @@ BEGIN
 END;
 /
 
--- regla3: no modificar id ni artista
+-- no modificar id ni artista
 CREATE OR REPLACE TRIGGER trg_cancion_update
 BEFORE UPDATE ON Cancion
 FOR EACH ROW
