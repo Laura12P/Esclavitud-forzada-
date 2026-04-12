@@ -1,3 +1,4 @@
+
 -- XTABLAS — ELIMINACIÓN DE TABLAS
 DROP TABLE FiltroBusqueda;
 DROP TABLE HistorialBusqueda;
@@ -15,91 +16,96 @@ DROP TABLE UsuarioBasico;
 DROP TABLE UsuarioMembresia;
 DROP TABLE Usuario_Streaming;
 DROP TABLE Usuario;
+DROP TABLE Cancion_Genero;
 DROP TABLE Cancion;
 DROP TABLE Artista;
 DROP TABLE Genero;
 
--- TABLAS: CREACIÓN DE TABLAS
+
+-- SECCIÓN 1: TABLAS
 
 -- GRAN CONCEPTO: CANCIÓN
 
 CREATE TABLE Genero (
-    idGenero        NUMBER(10),
+    idGenero        NUMBER(10)      PRIMARY KEY,
     nombreGenero    VARCHAR(255)    NOT NULL,
     descripcion     VARCHAR(255)    NOT NULL
 );
 
 CREATE TABLE Artista (
-    idArtista       NUMBER(10),
+    idArtista       NUMBER(10)      PRIMARY KEY,
     nombre          VARCHAR(255)    NOT NULL,
     paisOrigen      VARCHAR(255)    NOT NULL,
-    añoDebut        DATE            NOT NULL
+    anoDebut        DATE            NOT NULL
 );
 
 CREATE TABLE Cancion (
-    idCancion       NUMBER(10),
+    idCancion       NUMBER(10)      PRIMARY KEY,
     tituloCancion   VARCHAR(20)     NOT NULL,
     duracion        NUMBER(10)      NOT NULL,
-    año             DATE            NOT NULL,
-    idArtista       NUMBER(10)      NOT NULL,
-    idGenero        NUMBER(10)      NOT NULL
+    ano             DATE            NOT NULL,
+    idArtista       NUMBER(10)      NOT NULL
 );
 -- Relación muchos a muchos
 CREATE TABLE Cancion_Genero (
     idCancion       NUMBER(10)      NOT NULL,
-    idGenero        NUMBER(10)      NOT NULL
+    idGenero        NUMBER(10)      NOT NULL,
+    CONSTRAINT pk_Cancion_Genero    PRIMARY KEY (idCancion, idGenero)
 );
 
 -- GRAN CONCEPTO: USUARIO
 
 CREATE TABLE Usuario (
-    idUsuario               NUMBER(10),
+    idUsuario               NUMBER(10)      PRIMARY KEY,
     nombreUsuario           VARCHAR(255)    NOT NULL,
     correo                  VARCHAR(255)    NOT NULL,
     contrasena              VARCHAR(16)     NOT NULL,
     fechaRegistro           DATE            NOT NULL,
-    descripcionPerfil       VARCHAR(100)    
+    descripcionPerfil       VARCHAR(100)    NULL
 );
 -- Atributo con multiplicidad muchos
 CREATE TABLE Usuario_Streaming (
     idUsuario               NUMBER(10)      NOT NULL,
-    plataformaStreaming      VARCHAR(20)     NOT NULL
+    plataformaStreaming      VARCHAR(20)     NOT NULL,
+    CONSTRAINT pk_Usuario_Streaming         PRIMARY KEY (idUsuario, plataformaStreaming)
 );
 
 CREATE TABLE UsuarioBasico (
-    idUsuario       NUMBER(10)
+    idUsuario       NUMBER(10)      PRIMARY KEY
 );
 
 CREATE TABLE UsuarioMembresia (    
-    idUsuario               NUMBER(10),
+    idUsuario               NUMBER(10)      PRIMARY KEY,
     fechaInicioMembresia    DATE            NOT NULL,
     fechaFinMembresia       DATE            NULL,
     estadoMembresia         VARCHAR(20)     NOT NULL,
     tipoMembresia           VARCHAR(20)     NOT NULL
 );
 
+
 -- GRAN CONCEPTO: HUELLA MUSICAL
 
 CREATE TABLE Publicacion (
-    idPublicacion       NUMBER(10),
+    idPublicacion       NUMBER(10)      PRIMARY KEY,
     contenido           VARCHAR(255)    NOT NULL,
     fechaPublicacion    DATE            NOT NULL,
     likes               NUMBER(10)      NOT NULL,
     comentarios         NUMBER(10)      NOT NULL,
     idUsuario           NUMBER(10)      NOT NULL,
-    idCancionAdjunta    NUMBER(10)      
+    idCancionAdjunta    NUMBER(10)      NULL
 );
 
 -- Atributo con multiplicidad muchos
 CREATE TABLE Publicacion_TipoContenido (
     idPublicacion   NUMBER(10)      NOT NULL,
-    tipoContenido   VARCHAR(20)     NOT NULL
+    tipoContenido   VARCHAR(20)     NOT NULL,
+    CONSTRAINT pk_Publicacion_Tipo  PRIMARY KEY (idPublicacion, tipoContenido)
 );
 
 CREATE TABLE Historial_Musical (
-    idRegistro          NUMBER(10),
+    idRegistro          NUMBER(10)      PRIMARY KEY,
     fechaRegistro       DATE            NOT NULL,
-    notaPersonal        VARCHAR(255),
+    notaPersonal        VARCHAR(255)    NULL,
     emocion             VARCHAR(10)     NOT NULL,
     idCancion           NUMBER(10)      NOT NULL,
     idUsuario           NUMBER(10)      NOT NULL
@@ -108,30 +114,34 @@ CREATE TABLE Historial_Musical (
 -- Atributo con multiplicidad muchos
 CREATE TABLE Historial_Periodo (
     idRegistro      NUMBER(10)      NOT NULL,
-    periodo         DATE            NOT NULL
+    periodo         DATE            NOT NULL,
+    CONSTRAINT pk_Historial_Periodo     PRIMARY KEY (idRegistro, periodo)
 );
 
 -- Atributo con multiplicidad muchos
 CREATE TABLE Historial_Emocion (
     idRegistro      NUMBER(10)      NOT NULL,
-    emocion         VARCHAR(10)     NOT NULL
+    emocion         VARCHAR(10)     NOT NULL,
+    CONSTRAINT pk_Historial_Emocion     PRIMARY KEY (idRegistro, emocion)
 );
+
 
 -- GRAN CONCEPTO: RECOMENDACIÓN
 
 CREATE TABLE Recomendacion (
-    idRecomendacion         NUMBER(10),
+    idRecomendacion         NUMBER(10)      PRIMARY KEY,
     fechaRecomendacion      DATE            NOT NULL,
     mensajeRecomendacion    VARCHAR(255)    NOT NULL,
     tipoRecomendacion       VARCHAR(20)     NOT NULL,
     idUsuario               NUMBER(10)      NOT NULL,
-    idCancion               NUMBER(10)
+    idCancion               NUMBER(10)      NULL
 );
+
 
 -- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
 CREATE TABLE ConfiguracionUsuario (
-    idConfiguracion         NUMBER(10),
+    idConfiguracion         NUMBER(10)      PRIMARY KEY,
     perfilPublico           NUMBER(1)       NOT NULL,
     quienPuedeSeguir        VARCHAR2(15)    NOT NULL,
     quienVeHistorial        VARCHAR2(15)    NOT NULL,
@@ -141,220 +151,189 @@ CREATE TABLE ConfiguracionUsuario (
 );
 
 CREATE TABLE ListaNegra (
-    idBloqueo           NUMBER(10),
+    idBloqueo           NUMBER(10)      PRIMARY KEY,
     idUsuarioOrigen     NUMBER(10)      NOT NULL,
     idUsuarioDestino    NUMBER(10)      NOT NULL,
     fechaBloqueo        DATE            NOT NULL,
-    motivoBloqueo       VARCHAR(255)    
+    motivoBloqueo       VARCHAR(255)    NULL
 );
+
 
 -- GRAN CONCEPTO: MODERACIÓN & REPORTE
 
 CREATE TABLE Reporte (
-    idReporte               NUMBER(10),
+    idReporte               NUMBER(10)      PRIMARY KEY,
     idUsuarioReportante     NUMBER(10)      NOT NULL,
     idUsuarioReportado      NUMBER(10)      NOT NULL,
     motivoReporte           VARCHAR(30)     NOT NULL,
-    descripcionReporte      VARCHAR(255),
+    descripcionReporte      VARCHAR(255)    NULL,
     fechaReporte            DATE            NOT NULL,
     estadoReporte           VARCHAR(20)     NOT NULL
 );
 
 CREATE TABLE Sancion (
-    idSancion           NUMBER(10),
+    idSancion           NUMBER(10)      PRIMARY KEY,
     tipoSancion         VARCHAR(25)     NOT NULL,
     fechaInicio         DATE            NOT NULL,
-    fechaFin            DATE,
+    fechaFin            DATE            NULL,
     motivoSancion       VARCHAR(255)    NOT NULL,
     idReporte           NUMBER(10)      NOT NULL,
     idUsuario           NUMBER(10)      NOT NULL
 );
 
+
 --  GRAN CONCEPTO: BÚSQUEDA & DESCUBRIMIENTO
 
 CREATE TABLE HistorialBusqueda (
-    idBusqueda          NUMBER(10),
+    idBusqueda          NUMBER(10)      PRIMARY KEY,
     terminoBusqueda     VARCHAR(255)    NOT NULL,
     fechaBusqueda       DATE            NOT NULL,
     idUsuario           NUMBER(10)      NOT NULL
 );
 
 CREATE TABLE FiltroBusqueda (
-    idFiltro            NUMBER(10),
+    idFiltro            NUMBER(10)      PRIMARY KEY,
     fechaUso            DATE            NOT NULL,
     exito               NUMBER(1)       NOT NULL,
-    periodo             DATE,
-    idGenero            NUMBER(10),
-    idArtista           NUMBER(10),
-    idRegistro          NUMBER(10),
-    idBusqueda          NUMBER(10)      NOT NULL
+    periodo             DATE            NULL,
+    idGenero            NUMBER(10)      NULL,
+    idArtista           NUMBER(10)      NULL,
+    idRegistro          NUMBER(10)      NULL,
+    idBusqueda          NUMBER(10)      NULL
 );
 
----------------------------PK & UK LLAVES-------------------------------------
 
---------------- GRAN CONCEPTO: CANCION ----------------------------------
+-- SECCIÓN 2: CLAVES FORÁNEAS
 
-ALTER TABLE Genero
-    ADD CONSTRAINT pk_genero PRIMARY KEY (idGenero);
-
-ALTER TABLE Artista
-    ADD CONSTRAINT pk_artista PRIMARY KEY (idArtista);
-
+-- Canción
 ALTER TABLE Cancion
-    ADD CONSTRAINT pk_cancion PRIMARY KEY(idCancion);
+    ADD CONSTRAINT fk_Cancion_Artista       
+    FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
---------------- GRAN CONCEPTO: USUARIO ----------------------------------
+-- Cancion_Genero
+ALTER TABLE Cancion_Genero
+    ADD CONSTRAINT fk_CG_Cancion
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
-ALTER TABLE Usuario    
-    ADD CONSTRAINT uk_nombreUsuario_Usuario UNIQUE (nombreUsuario)
-    ADD CONSTRAINT uk_correo_Usuario UNIQUE (correo)
-    ADD CONSTRAINT pk_usuario PRIMARY KEY (idUsuario);
+ALTER TABLE Cancion_Genero
+    ADD CONSTRAINT fk_CG_Genero
+    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
 
+-- Usuario
 ALTER TABLE Usuario_Streaming
-    ADD CONSTRAINT pk_Usuario_Streaming PRIMARY KEY (idUsuario, plataformaStreaming);
+    ADD CONSTRAINT fk_US_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE UsuarioBasico
-    ADD CONSTRAINT pk_usuario_basico PRIMARY KEY (idUsuario);
+    ADD CONSTRAINT fk_UsuarioBasico         
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT pk_Usuario_Membresia PRIMARY KEY (idUsuario);
+    ADD CONSTRAINT fk_UsuarioMembresia
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
---------------- GRAN CONCEPTO: HUELLA MUSICAL ----------------------------------
+
+-- Huella Musical
+ALTER TABLE Publicacion
+    ADD CONSTRAINT fk_Publicacion_Usuario   
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Publicacion
-    ADD CONSTRAINT pk_publicacion PRIMARY KEY (idPublicacion);
+    ADD CONSTRAINT fk_Publicacion_Cancion   
+    FOREIGN KEY (idCancionAdjunta) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Publicacion_TipoContenido
-    ADD CONSTRAINT pk_Publicacion_TipoContenido PRIMARY KEY (idPublicacion, tipoContenido);
-
-ALTER TABLE Historial_Musical  
-    ADD CONSTRAINT pk_historial_musical PRIMARY KEY (idRegistro);
-
-ALTER TABLE Historial_Periodo
-    ADD CONSTRAINT pk_Historial_Periodo PRIMARY KEY (idRegistro, periodo);
-
-ALTER TABLE Historial_Emocion
-    ADD CONSTRAINT pk_historial_emocion PRIMARY KEY (idRegistro, emocion);
-
---------------- GRAN CONCEPTO: RECOMENDACION ----------------------------------
-
-ALTER TABLE Recomendacion
-    ADD CONSTRAINT pk_recomendacion PRIMARY KEY (idRecomendacion);
-
---------------- GRAN CONCEPTO: CONFIGURACION & PRIVACIDAD ----------------------------------
-
-ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT pk_configuracion_usuario PRIMARY KEY (idConfiguracion, idUsuario);
-
-ALTER TABLE ListaNegra  
-    ADD CONSTRAINT pk_lista_negra PRIMARY KEY (idBloqueo);
-
---------------- GRAN CONCEPTO: MODERACION & REPORTE ----------------------------------
-
-ALTER TABLE Reporte
-    ADD CONSTRAINT pk_reporte PRIMARY KEY (idReporte);
-
-ALTER TABLE Sancion
-    ADD CONSTRAINT pk_sancion PRIMARY KEY (idSancion);
-
---------------- GRAN CONCEPTO: BUSQUEDA & DESCUBRIMIENTO ----------------------------------
-
-ALTER TABLE HistorialBusqueda
-    ADD CONSTRAINT pk_hisorialBusqueda PRIMARY KEY (idBusqueda);
-
-ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT pk_FiltroBusqueda PRIMARY KEY (idFiltro, idBusqueda);
-
----------------------------FK LLAVES-------------------------------------
-
-
---------------- GRAN CONCEPTO: CANCION ----------------------------------
-
-ALTER TABLE Cancion
-    ADD CONSTRAINT fk_Cancion_Artista FOREIGN KEY (idArtista) REFERENCES Artista(idArtista)
-    ADD CONSTRAINT fk_Cancion_Genero FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
-
---------------- GRAN CONCEPTO: USUARIO ----------------------------------
-
-ALTER TABLE Usuario_Streaming
-    ADD CONSTRAINT fk_US_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
-
-ALTER TABLE UsuarioBasico
-    ADD CONSTRAINT fk_UsuarioBasico FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
-
-ALTER TABLE UsuarioMembresia
-    ADD CONSTRAINT fk_UsuarioMembresia FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
-
-
---------------- GRAN CONCEPTO: HUELLA MUSICAL ----------------------------------
-ALTER TABLE Publicacion
-    ADD CONSTRAINT fk_Publicacion_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
-
-ALTER TABLE Publicacion
-    ADD CONSTRAINT fk_Publicacion_Cancion FOREIGN KEY (idCancionAdjunta) REFERENCES Cancion(idCancion);
-
-ALTER TABLE Publicacion_TipoContenido
-    ADD CONSTRAINT fk_PTC_Publicacion FOREIGN KEY (idPublicacion) REFERENCES Publicacion(idPublicacion);
+    ADD CONSTRAINT fk_PTC_Publicacion       
+    FOREIGN KEY (idPublicacion) REFERENCES Publicacion(idPublicacion);
 
 ALTER TABLE Historial_Musical
-    ADD CONSTRAINT fk_HM_Cancion FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
+    ADD CONSTRAINT fk_HM_Cancion            
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
 ALTER TABLE Historial_Musical
-    ADD CONSTRAINT fk_HM_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_HM_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 -- Historial_Periodo
 ALTER TABLE Historial_Periodo
-    ADD CONSTRAINT fk_HP_Historial FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
+    ADD CONSTRAINT fk_HP_Historial
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
 
 -- Historial_Emocion
 ALTER TABLE Historial_Emocion
-    ADD CONSTRAINT fk_HE_Historial FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
+    ADD CONSTRAINT fk_HE_Historial
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
 
---------------- GRAN CONCEPTO: RECOMENDACION ----------------------------------
+-- Recomendación
 ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Reco_Usuario          
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Recomendacion
-    ADD CONSTRAINT fk_Reco_Cancion FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
+    ADD CONSTRAINT fk_Reco_Cancion          
+    FOREIGN KEY (idCancion) REFERENCES Cancion(idCancion);
 
 -- Configuración & Privacidad
 ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT fk_Config_Usuario  FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Config_Usuario        
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE ListaNegra
-    ADD CONSTRAINT fk_LN_Origen FOREIGN KEY (idUsuarioOrigen) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_LN_Origen             
+    FOREIGN KEY (idUsuarioOrigen) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE ListaNegra
-    ADD CONSTRAINT fk_LN_Destino FOREIGN KEY (idUsuarioDestino) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_LN_Destino            
+    FOREIGN KEY (idUsuarioDestino) REFERENCES Usuario(idUsuario);
 
---------------- GRAN CONCEPTO: CONFIGURACION & PRIVACIDAD ----------------------------------
+-- Moderación & Reporte
 ALTER TABLE Reporte
-    ADD CONSTRAINT fk_Reporte_Reportante FOREIGN KEY (idUsuarioReportante) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Reporte_Reportante    
+    FOREIGN KEY (idUsuarioReportante) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Reporte
-    ADD CONSTRAINT fk_Reporte_Reportado FOREIGN KEY (idUsuarioReportado) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Reporte_Reportado     
+    FOREIGN KEY (idUsuarioReportado) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE Sancion
-    ADD CONSTRAINT fk_Sancion_Reporte FOREIGN KEY (idReporte) REFERENCES Reporte(idReporte);
+    ADD CONSTRAINT fk_Sancion_Reporte       
+    FOREIGN KEY (idReporte) REFERENCES Reporte(idReporte);
 
 ALTER TABLE Sancion
-    ADD CONSTRAINT fk_Sancion_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_Sancion_Usuario       
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
---------------- GRAN CONCEPTO: BUSQUEDA & DESCUBRIMIENTO ----------------------------------
+-- Búsqueda & Descubrimiento
 ALTER TABLE HistorialBusqueda
-    ADD CONSTRAINT fk_HB_Usuario FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
+    ADD CONSTRAINT fk_HB_Usuario            
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(idUsuario);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Genero FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
+    ADD CONSTRAINT fk_FB_Genero            
+    FOREIGN KEY (idGenero) REFERENCES Genero(idGenero);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Artista FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
+    ADD CONSTRAINT fk_FB_Artista            
+    FOREIGN KEY (idArtista) REFERENCES Artista(idArtista);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Historial FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
+    ADD CONSTRAINT fk_FB_Historial          
+    FOREIGN KEY (idRegistro) REFERENCES Historial_Musical(idRegistro);
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Busqueda FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
+    ADD CONSTRAINT fk_FB_Busqueda
+    FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
+
+-- #RESTRICCIONES DECLARATIVAS
+-- Usuario
+ALTER TABLE Usuario
+    ADD CONSTRAINT uq_Usuario_nombre    UNIQUE (nombreUsuario);
+
+ALTER TABLE Usuario
+    ADD CONSTRAINT uq_Usuario_correo    UNIQUE (correo);
+
+ALTER TABLE Genero
+    ADD CONSTRAINT uq_Genero_nombre     UNIQUE (nombreGenero);
 
 -- Usuario_Streaming
 ALTER TABLE Usuario_Streaming
@@ -741,18 +720,4 @@ BEGIN
     END IF;
 END;
 
--- Trigger 21: Verificar que el registro padre exista en Historial_Musical
-CREATE TRIGGER trg_HE_RegistroExiste
-BEFORE INSERT
-ON Historial_Emocion
-FOR EACH ROW
-DECLARE
-    v_count NUMBER(10);
-BEGIN
-    SELECT COUNT(*) INTO v_count
-    FROM Historial_Musical WHERE idRegistro = :NEW.idRegistro;
-    IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20024, 
-            'El registro de historial musical indicado no existe.');
-    END IF;
-END;
+
