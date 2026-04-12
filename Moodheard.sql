@@ -755,4 +755,4 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20024, 
             'El registro de historial musical indicado no existe.');
     END IF;
-END trg_HE_RegistroExiste;
+END;
