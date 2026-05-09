@@ -22,7 +22,7 @@ ALTER TABLE Recomendacion
     ADD CONSTRAINT ck_Recomendacion_tipo CHECK (tipoRecomendacion IN ('directa', 'comunidad', 'publica'));
 
 ALTER TABLE Recomendacion
-    ADD CONSTRAINT ck_recomendacion_visualizacion CHECK (visualizacion in ('0', '1'));
+    ADD CONSTRAINT ck_recomendacion_visualizacion CHECK (visualizacion IN (0, 1));
 
 --  ConfiguracionUsuario
 ALTER TABLE ConfiguracionUsuario
@@ -276,7 +276,7 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20002,'No modificar idCancion');
     END IF;
 
-    IF :NEW.idArtista <> :OLD.idArtista THEN
+    IF NVL(:NEW.idArtista, -1) <> NVL(:OLD.idArtista, -1) THEN
         RAISE_APPLICATION_ERROR(-20003,'No modificar artista');
     END IF;
 END;
@@ -296,7 +296,7 @@ BEGIN
     :NEW.fechaRecomendacion := SYSDATE;
     :NEW.visualizacion := 0;
 
-    IF :NEW.idUsuario = :NEW.idUsuarioDestino THEN
+    IF :NEW.idUsuarioRecomendador = :NEW.idUsuarioDestino THEN
         RAISE_APPLICATION_ERROR(-20004,'No auto recomendación');
     END IF;
 END;
@@ -307,7 +307,8 @@ CREATE OR REPLACE TRIGGER trg_reco_update
 BEFORE UPDATE ON Recomendacion
 FOR EACH ROW
 BEGIN
-    IF :NEW.idUsuarioDestino <> :OLD.idUsuarioDestino OR:NEW.idCancion <> :OLD.idCancion THEN
+    IF :NEW.idUsuarioDestino <> :OLD.idUsuarioDestino
+       OR NVL(:NEW.idCancion, -1) <> NVL(:OLD.idCancion, -1) THEN
         RAISE_APPLICATION_ERROR(-20005,'No modificar destinatario o canción');
     END IF;
 END;
@@ -338,18 +339,19 @@ BEGIN
     :NEW.fechaPublicacion := SYSDATE;
     :NEW.likes := 0;
 
-    IF (:NEW.contenido IS NULL OR TRIM(:NEW.contenido) = '') OR :NEW.idCancionAdjunta IS NULL THEN
+    IF (TRIM(:NEW.contenido) IS NULL OR TRIM(:NEW.contenido) = '') AND :NEW.idCancion IS NULL THEN
         RAISE_APPLICATION_ERROR(-20007,'Debe tener contenido o canción');
     END IF;
 END;
 /
 
 -- no modificar canción adjunta
+
 CREATE OR REPLACE TRIGGER trg_pub_update
 BEFORE UPDATE ON Publicacion
 FOR EACH ROW
 BEGIN
-    IF :NEW.idCancionAdjunta <> :OLD.idCancionAdjunta THEN
+    IF NVL(:NEW.idCancion, -1) <> NVL(:OLD.idCancion, -1) THEN
         RAISE_APPLICATION_ERROR(-20008,'No modificar canción adjunta');
     END IF;
 END;
@@ -389,7 +391,7 @@ FOR EACH ROW
 BEGIN
     SELECT NVL(MAX(idFiltro),0)+1 INTO :NEW.idFiltro FROM FiltroBusqueda;
 
-    IF :NEW.fechaUso > SYSDATE THEN
+    IF :NEW.fechaIntento > SYSDATE THEN
         RAISE_APPLICATION_ERROR(-20011,'Fecha inválida');
     END IF;
 END;
@@ -401,7 +403,7 @@ BEFORE UPDATE ON FiltroBusqueda
 FOR EACH ROW
 BEGIN
     IF :NEW.idFiltro <> :OLD.idFiltro OR
-       :NEW.fechaUso <> :OLD.fechaUso THEN
+       :NEW.fechaIntento <> :OLD.fechaIntento THEN
         RAISE_APPLICATION_ERROR(-20012,'No modificar id o fecha');
     END IF;
 END;
@@ -496,27 +498,6 @@ BEGIN
     END IF;
 END;
 /
-------------------------------------------------------------------
--------------------- XDISPARADORES -------------------------------
-------------------------------------------------------------------
-
-DROP TRIGGER trg_cancion_insert;
-DROP TRIGGER trg_cancion_update;
-DROP TRIGGER trg_reco_insert;
-DROP TRIGGER trg_reco_update;
-DROP TRIGGER trg_reco_delete;
-DROP TRIGGER trg_pub_insert;
-DROP TRIGGER trg_pub_update;
-DROP TRIGGER trg_usuario_insert;
-DROP TRIGGER trg_filtro_insert;
-DROP TRIGGER trg_filtro_update;
-DROP TRIGGER trg_filtro_delete;
-DROP TRIGGER trg_config_insert;
-DROP TRIGGER trg_lista_negra_update;
-DROP TRIGGER trg_reporte_insert;
-DROP TRIGGER trg_sancion_insert;
-DROP TRIGGER trg_reporte_delete;
-DROP TRIGGER trg_sancion_delete;
 
 ----------------------------------------------------------------------------------------------
 -------------------------------------- DisparadoresOK --------------------------------------------
@@ -524,38 +505,37 @@ DROP TRIGGER trg_sancion_delete;
 
 -- GRAN CONCEPTO: CANCIÓN
  
-INSERT INTO Genero VALUES (1, 'Rock', 'Musica con guitarras electricas y baterias');
-INSERT INTO Genero VALUES (2, 'Pop', 'Musica popular de consumo masivo');
-INSERT INTO Genero VALUES (3, 'Jazz', 'Genero afroamericano de improvisacion');
-INSERT INTO Genero VALUES (4, 'Reggaeton', 'Ritmo urbano de origen caribeño');
+INSERT INTO Genero VALUES (8, 'Rock', 'Musica con guitarras electricas y baterias');
+INSERT INTO Genero VALUES (11, 'Pop', 'Musica popular de consumo masivo');
+INSERT INTO Genero VALUES (14, 'Jazz', 'Genero afroamericano de improvisacion');
+INSERT INTO Genero VALUES (12, 'Reggaeton', 'Ritmo urbano de origen caribeño');
  
-INSERT INTO Artista VALUES (1, 'The Beatles', 'Reino Unido', TO_DATE('1960-01-01','YYYY-MM-DD'));
+INSERT INTO Artista VALUES (null, 'The Beatles', 'Reino Unido', TO_DATE('1960-01-01','YYYY-MM-DD'));
 INSERT INTO Artista VALUES (2, 'Taylor Swift', 'Estados Unidos', TO_DATE('2006-06-01','YYYY-MM-DD'));
 INSERT INTO Artista VALUES (3, 'Bad Bunny', 'Puerto Rico', TO_DATE('2016-01-01','YYYY-MM-DD'));
 INSERT INTO Artista VALUES (4, 'Miles Davis', 'Estados Unidos', TO_DATE('1944-01-01','YYYY-MM-DD'));
  
-
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (1, 'Let It Be', 243, TO_DATE('1970-05-08','YYYY-MM-DD'), 1, 1);
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (2, 'Anti-Hero', 200, TO_DATE('2022-10-21','YYYY-MM-DD'), 2, 2);
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (3, 'Titi Me Pregunto', 196, TO_DATE('2022-06-10','YYYY-MM-DD'), 3, 4);
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (4, 'Kind of Blue', 562, TO_DATE('1959-08-17','YYYY-MM-DD'), 4, 3);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Let It Be', 243, TO_DATE('1970-05-08','YYYY-MM-DD'), 1);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Anti-Hero', 200, TO_DATE('2022-10-21','YYYY-MM-DD'), 2);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Titi Me Pregunto', 196, TO_DATE('2022-06-10','YYYY-MM-DD'), 3);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Kind of Blue', 562, TO_DATE('1959-08-17','YYYY-MM-DD'), 4);
  
 -- GRAN CONCEPTO: USUARIO
 
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (1, 'juangomez',  'juan@gmail.com', 'Password1', SYSDATE, 'Fan del rock');
+    VALUES (0, 'juangomez',  'juan@gmail.com', 'Password1', SYSDATE, 'Fan del rock');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (2, 'mariaperez', 'maria@gmail.com', 'Segura456', SYSDATE, NULL);
+    VALUES (0, 'mariaperez', 'maria@gmail.com', 'Segura456', SYSDATE, NULL);
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (3, 'carlos88',   'carlos@gmail.com', 'Jazz4Ever', SYSDATE, 'Amante del jazz');
+    VALUES (0, 'carlos88',   'carlos@gmail.com', 'Jazz4Ever', SYSDATE, 'Amante del jazz');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (4, 'adminUser',  'admin@app.com', 'Admin1234', SYSDATE, 'Administrador');
+    VALUES (0, 'adminUser',  'admin@app.com', 'Admin1234', SYSDATE, 'Administrador');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (5, 'testUser5',  'test5@app.com', 'Test5678x', SYSDATE, NULL);
+    VALUES (0, 'testUser5',  'test5@app.com', 'Test5678x', SYSDATE, NULL);
  
 INSERT INTO UsuarioBasico VALUES (3);
 INSERT INTO UsuarioBasico VALUES (5);
@@ -568,61 +548,63 @@ INSERT INTO Usuario_Streaming VALUES (3, 'youtube_music');
  
 -- GRAN CONCEPTO: HUELLA MUSICAL
 
-INSERT INTO Historial_Musical VALUES (1, TO_DATE('2024-03-01','YYYY-MM-DD'), 'Me recuerda mi infancia', 'feliz',1, 1);
-INSERT INTO Historial_Musical VALUES (2, TO_DATE('2024-04-10','YYYY-MM-DD'), NULL, 'triste',  2, 2);
-INSERT INTO Historial_Musical VALUES (3, TO_DATE('2024-05-22','YYYY-MM-DD'), 'Excelente ritmo', 'animado', 3, 3);
-INSERT INTO HistorialBusqueda VALUES (1, 'The Beatles',   SYSDATE, 1);
-INSERT INTO HistorialBusqueda VALUES (2, 'reggaeton 2022',SYSDATE, 2);
-INSERT INTO HistorialBusqueda VALUES (3, 'jazz clasico',  SYSDATE, 3);
-INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, comentarios, idUsuario, idCancionAdjunta)
-    VALUES (1, 'Clasico atemporal de los 70s', SYSDATE, 0, 0, 1, 1);
-INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, comentarios, idUsuario, idCancionAdjunta)
-    VALUES (2, 'Taylor vuelve a dominar', SYSDATE, 0, 0, 2, 2);
-INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, comentarios, idUsuario, idCancionAdjunta)
-    VALUES (3, 'El reggaeton sigue fuerte', SYSDATE, 0, 0, 3, 3); 
+INSERT INTO Historial_Musical VALUES (0, TO_DATE('2024-03-01','YYYY-MM-DD'), 'Me recuerda mi infancia', 1, 1);
+INSERT INTO Historial_Musical VALUES (0, TO_DATE('2024-04-10','YYYY-MM-DD'), NULL, 2, 2);
+INSERT INTO Historial_Musical VALUES (0, TO_DATE('2024-05-22','YYYY-MM-DD'), 'Excelente ritmo', 3, 3);
+INSERT INTO HistorialBusqueda VALUES (0, 'The Beatles',   SYSDATE, 1);
+INSERT INTO HistorialBusqueda VALUES (0, 'reggaeton 2022',SYSDATE, 2);
+INSERT INTO HistorialBusqueda VALUES (0, 'jazz clasico',  SYSDATE, 3);
+
+INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, idUsuario, idCancion)
+    VALUES (0, 'Clasico atemporal de los 70s', SYSDATE, 0, 1, 1);
+INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, idUsuario, idCancion)
+    VALUES (0, 'Taylor vuelve a dominar', SYSDATE, 0, 2, 2);
+INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, idUsuario, idCancion)
+    VALUES (0, 'El reggaeton sigue fuerte', SYSDATE, 0, 3, 3); 
 INSERT INTO Publicacion_TipoContenido VALUES (1, 'cancion');
 INSERT INTO Publicacion_TipoContenido VALUES (2, 'album');
 INSERT INTO Publicacion_TipoContenido VALUES (3, 'artista');
  
 -- GRAN CONCEPTO: RECOMENDACIÓN
 
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
-    VALUES (1, SYSDATE, 'Te va a encantar esta cancion', 'directa',   1, 1, 2, 0);
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
-    VALUES (2, SYSDATE, 'Escucha esto de Taylor', 'publica',   2, 2, 3, 0);
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
-    VALUES (3, SYSDATE, 'Del playlist comunitario', 'comunidad', 3, 3, 1, 0);
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
+    VALUES (0, SYSDATE, 'Te va a encantar esta cancion', 'directa',   1, 1, 2, 0);
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
+    VALUES (0, SYSDATE, 'Escucha esto de Taylor', 'publica',   2, 2, 3, 0);
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
+    VALUES (0, SYSDATE, 'Del playlist comunitario', 'comunidad', 3, 3, 1, 0);
  
 -- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
 INSERT INTO ConfiguracionUsuario (idConfiguracion, perfilPublico, quienPuedeSeguir, quienVeHistorial, quienVePublicaciones, notificacionesActivas, idUsuario)
-    VALUES (1, 1, 'todos', 'seguidores', 'todos', 1, 1);
+    VALUES (0, 1, 'todos', 'seguidores', 'todos', 1, 1);
 INSERT INTO ConfiguracionUsuario (idConfiguracion, perfilPublico, quienPuedeSeguir, quienVeHistorial, quienVePublicaciones, notificacionesActivas, idUsuario)
-    VALUES (2, 0, 'seguidores', 'nadie', 'seguidores', 0, 2);
+    VALUES (0, 0, 'seguidores', 'nadie', 'seguidores', 0, 2);
 INSERT INTO ConfiguracionUsuario (idConfiguracion, perfilPublico, quienPuedeSeguir, quienVeHistorial, quienVePublicaciones, notificacionesActivas, idUsuario)
-    VALUES (3, 1, 'todos', 'todos', 'todos', 1, 3);
+    VALUES (0, 1, 'todos', 'todos', 'todos', 1, 3);
  
 -- GRAN CONCEPTO: MODERACIÓN & REPORTE
 
 INSERT INTO Reporte (idReporte, idUsuarioReportante, idUsuarioReportado, motivoReporte, descripcionReporte, fechaReporte, estadoReporte)
-    VALUES (1, 1, 5, 'spam',  'Publicaciones repetidas', SYSDATE, 'pendiente');
+    VALUES (0, 1, 5, 'spam',  'Publicaciones repetidas', SYSDATE, 'pendiente');
 INSERT INTO Reporte (idReporte, idUsuarioReportante, idUsuarioReportado, motivoReporte, descripcionReporte, fechaReporte, estadoReporte)
-    VALUES (2, 3, 4, 'acoso', 'Mensajes agresivos', SYSDATE, 'revisado');
+    VALUES (0, 3, 4, 'acoso', 'Mensajes agresivos', SYSDATE, 'revisado');
 INSERT INTO Reporte (idReporte, idUsuarioReportante, idUsuarioReportado, motivoReporte, descripcionReporte, fechaReporte, estadoReporte)
-    VALUES (3, 2, 5, 'otro', 'Conducta sospechosa', SYSDATE, 'pendiente');
-INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuario)
-    VALUES (4, 'advertencia', TO_DATE('2024-01-01','YYYY-MM-DD'), TO_DATE('2024-02-01','YYYY-MM-DD'), 'Primera advertencia por spam', 1, 5);
-INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuario)
-    VALUES (5, 'suspension_temporal', TO_DATE('2024-03-01','YYYY-MM-DD'), TO_DATE('2024-04-01','YYYY-MM-DD'), 'Suspension por acoso reiterado', 2, 4);
+    VALUES (0, 2, 5, 'otro', 'Conducta sospechosa', SYSDATE, 'pendiente');
+
+INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuarioReportado)
+    VALUES (0, 'advertencia', TO_DATE('2024-01-01','YYYY-MM-DD'), TO_DATE('2024-02-01','YYYY-MM-DD'), 'Primera advertencia por spam', 1, 5);
+INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuarioReportado)
+    VALUES (0, 'suspension_temporal', TO_DATE('2024-03-01','YYYY-MM-DD'), TO_DATE('2024-04-01','YYYY-MM-DD'), 'Suspension por acoso reiterado', 2, 4);
  
 -- GRAN CONCEPTO: BÚSQUEDA & DESCUBRIMIENTO
 
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
-    VALUES (1, SYSDATE, 1, NULL, 1, NULL, NULL, 1);
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
-    VALUES (2, SYSDATE, 0, NULL, NULL, 2, NULL, 2);
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
-    VALUES (3, SYSDATE - 1, 1, TO_DATE('2022-01-01','YYYY-MM-DD'), 3, NULL, 1, 3);
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+    VALUES (0, SYSDATE, 1, NULL, 1, NULL, NULL, 1);
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+    VALUES (0, SYSDATE, 0, NULL, NULL, 2, NULL, 2);
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+    VALUES (0, SYSDATE - 1, 1, TO_DATE('2022-01-01','YYYY-MM-DD'), 3, NULL, 1, 3);
  
 
 ------------------------------------------------------------------
@@ -632,12 +614,12 @@ INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArti
 -- GRAN CONCEPTO: CANCIÓN
 
 -- Año en el futuro lejano
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (0, 'Cancion 2099', 180, TO_DATE('2099-01-01','YYYY-MM-DD'), 1, 1);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Cancion 2099', 180, TO_DATE('2099-01-01','YYYY-MM-DD'), 1);
  
 -- Año en el futuro cercano
-INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista, idGenero)
-    VALUES (0, 'Cancion 2030', 200, ADD_MONTHS(SYSDATE, 12), 2, 2);
+INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
+    VALUES (0, 'Cancion 2030', 200, ADD_MONTHS(SYSDATE, 12), 2);
  
 -- Modificar el idCancion
 UPDATE Cancion SET idCancion = 99 WHERE idCancion = 1;
@@ -648,15 +630,15 @@ UPDATE Cancion SET idArtista = 4 WHERE idCancion = 1;
 -- GRAN CONCEPTO: RECOMENDACIÓN
 
 -- Usuario 1 se recomienda a sí mismo
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
     VALUES (0, SYSDATE, 'Me auto-recomiendo', 'directa', 1, 1, 1, 0);
  
 -- Usuario 2 se recomienda a sí mismo
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
     VALUES (0, SYSDATE, 'Yo mismo', 'comunidad', 2, 2, 2, 0);
  
 -- Usuario 3 se recomienda a sí mismo
-INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuario, idCancion, idUsuarioDestino, visualizacion)
+INSERT INTO Recomendacion (idRecomendacion, fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion, idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion)
     VALUES (0, SYSDATE, 'Mi propia reco', 'publica', 3, 3, 3, 0);
  
 -- Cambiar el destinatario de la recomendación
@@ -676,18 +658,18 @@ DELETE FROM Recomendacion WHERE idRecomendacion = 1;
 -- GRAN CONCEPTO: HUELLA MUSICAL
 
 -- Contenido solo con espacios y sin canción adjunta
-INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, comentarios, idUsuario, idCancionAdjunta)
-    VALUES (0, ' ', SYSDATE, 0, 0, 1, NULL);
+INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, idUsuario, idCancion)
+    VALUES (0, ' ', SYSDATE, 0, 1, NULL);
  
 -- Contenido con más espacios y sin canción adjunta
-INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, comentarios, idUsuario, idCancionAdjunta)
-    VALUES (0, '   ', SYSDATE, 0, 0, 2, NULL);
+INSERT INTO Publicacion (idPublicacion, contenido, fechaPublicacion, likes, idUsuario, idCancion)
+    VALUES (0, '   ', SYSDATE, 0, 2, NULL);
  
 -- Cambiar la canción adjunta de la publicación
-UPDATE Publicacion SET idCancionAdjunta = 2 WHERE idPublicacion = 1;
+UPDATE Publicacion SET idCancion = 2 WHERE idPublicacion = 1;
  
 -- Cambiar a NULL la canción adjunta
-UPDATE Publicacion SET idCancionAdjunta = NULL WHERE idPublicacion = 2;
+UPDATE Publicacion SET idCancion = NULL WHERE idPublicacion = 2;
  
 -- GRAN CONCEPTO: USUARIO
 
@@ -717,23 +699,23 @@ INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistr
  
 -- GRAN CONCEPTO: BÚSQUEDA & DESCUBRIMIENTO
 
--- fechaUso mañana
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+-- fechaIntento mañana
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
     VALUES (0, SYSDATE + 1, 1, NULL, 1, NULL, NULL, 1);
  
--- fechaUso 6 meses en el futuro
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+-- fechaIntento 6 meses en el futuro
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
     VALUES (0, ADD_MONTHS(SYSDATE, 6), 0, NULL, NULL, NULL, NULL, 2);
  
--- fechaUso 1 año en el futuro
-INSERT INTO FiltroBusqueda (idFiltro, fechaUso, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
+-- fechaIntento 1 año en el futuro
+INSERT INTO FiltroBusqueda (idFiltro, fechaIntento, exito, periodo, idGenero, idArtista, idRegistro, idBusqueda)
     VALUES (0, ADD_MONTHS(SYSDATE, 12), 1, NULL, NULL, 2, NULL, 3);
  
 -- Cambiar el idFiltro
 UPDATE FiltroBusqueda SET idFiltro = 99 WHERE idFiltro = 1 AND idBusqueda = 1;
  
--- Cambiar la fechaUso
-UPDATE FiltroBusqueda SET fechaUso = SYSDATE - 10 WHERE idFiltro = 1 AND idBusqueda = 1;
+-- Cambiar la fechaIntento
+UPDATE FiltroBusqueda SET fechaIntento = SYSDATE - 10 WHERE idFiltro = 1 AND idBusqueda = 1;
  
  
 -- Eliminar filtro con exito = 1
@@ -741,13 +723,13 @@ DELETE FROM FiltroBusqueda WHERE idFiltro = 1 AND idBusqueda = 1;
  
 -- GRAN CONCEPTO: CONFIGURACIÓN & PRIVACIDAD
 
-INSERT INTO ListaNegra VALUES (1, 1, 5, SYSDATE, 'Bloqueo inicial');
+INSERT INTO ListaNegra VALUES (0, 1, 5, SYSDATE, 'Bloqueo inicial');
 
 -- Cualquier modificación sobre ListaNegra es bloqueada
 UPDATE ListaNegra SET motivoBloqueo = 'Modificado' WHERE idBloqueo = 1;
  
--- Cambiar el usuario destino
-UPDATE ListaNegra SET idUsuarioDestino = 3 WHERE idBloqueo = 1;
+-- Cambiar el usuario bloqueado
+UPDATE ListaNegra SET idUsuarioBloqueado = 3 WHERE idBloqueo = 1;
  
 -- Cambiar la fecha de bloqueo
 UPDATE ListaNegra SET fechaBloqueo = SYSDATE - 5 WHERE idBloqueo = 1;
@@ -758,16 +740,38 @@ UPDATE ListaNegra SET fechaBloqueo = SYSDATE - 5 WHERE idBloqueo = 1;
 DELETE FROM Reporte WHERE idReporte = 1;
  
 -- Insertar una sanción con fechaFin en el futuro
-INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuario)
+INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuarioReportado)
     VALUES (0, 'suspension_temporal', SYSDATE, ADD_MONTHS(SYSDATE, 3), 'Sancion vigente prueba', 3, 5);
 
 -- Intentar eliminar la sanción aún vigente
 DELETE FROM Sancion WHERE idSancion = (SELECT MAX(idSancion) FROM Sancion WHERE fechaFin > SYSDATE);
  
 -- Insertar sanción sin fecha de fin (ban permanente, nunca vence)
-INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuario)
+INSERT INTO Sancion (idSancion, tipoSancion, fechaInicio, fechaFin, motivoSancion, idReporte, idUsuarioReportado)
     VALUES (0, 'ban_permanente', SYSDATE, NULL, 'Ban permanente prueba', 3, 4);
 
 -- Intentar eliminar la sanción sin fechaFin (fechaFin IS NULL → no vencida)
 DELETE FROM Sancion WHERE idSancion = (SELECT MAX(idSancion) FROM Sancion WHERE fechaFin IS NULL);
- 
+
+------------------------------------------------------------------
+-------------------- XDISPARADORES -------------------------------
+------------------------------------------------------------------
+
+DROP TRIGGER trg_cancion_insert;
+DROP TRIGGER trg_cancion_update;
+DROP TRIGGER trg_reco_insert;
+DROP TRIGGER trg_reco_update;
+DROP TRIGGER trg_reco_delete;
+DROP TRIGGER trg_pub_insert;
+DROP TRIGGER trg_pub_update;
+DROP TRIGGER trg_usuario_insert;
+DROP TRIGGER trg_filtro_insert;
+DROP TRIGGER trg_filtro_update;
+DROP TRIGGER trg_filtro_delete;
+DROP TRIGGER trg_config_insert;
+DROP TRIGGER trg_lista_n_insert;
+DROP TRIGGER trg_lista_negra_update;
+DROP TRIGGER trg_reporte_insert;
+DROP TRIGGER trg_sancion_insert;
+DROP TRIGGER trg_reporte_delete;
+DROP TRIGGER trg_sancion_delete;
