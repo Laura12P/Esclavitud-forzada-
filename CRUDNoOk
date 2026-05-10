@@ -1,0 +1,898 @@
+
+-- PA_CATALOGO_CANCIONES
+-- ERROR: Insertar artista con nombre NULL (campo obligatorio)
+BEGIN
+    PA_CATALOGO_CANCIONES.insertar_artista(
+        p_nombre => NULL,
+        p_pais => 'Puerto Rico',
+        p_añoDebut => 2016
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_artista: debio fallar por nombre NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_artista: nombre NULL rechazado');
+END;
+/
+
+-- ERROR: Insertar género con nombre NULL
+BEGIN
+    PA_CATALOGO_CANCIONES.insertar_genero(
+        p_nombre => NULL,
+        p_descripcion => 'Sin nombre'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_genero: debio fallar por nombre NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_genero: nombre NULL rechazado');
+END;
+/
+
+-- ERROR: Insertar canción con FK de artista inexistente
+BEGIN
+    PA_CATALOGO_CANCIONES.insertar_cancion(
+        p_titulo => 'Cancion Fantasma',
+        p_duracion => 200,
+        p_año => 2023,
+        p_idArtista => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_cancion: debio fallar por FK artista inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_cancion: FK artista inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar canción con título NULL
+BEGIN
+    PA_CATALOGO_CANCIONES.insertar_cancion(
+        p_titulo => NULL,
+        p_duracion => 200,
+        p_año => 2023,
+        p_idArtista => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_cancion: debio fallar por titulo NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_cancion: titulo NULL rechazado');
+END;
+/
+
+-- ERROR: Actualizar canción con ID inexistente
+BEGIN
+    PA_CATALOGO_CANCIONES.actualizar_cancion(
+        p_idCancion => 99999,
+        p_titulo => 'No Existe',
+        p_duracion => 100
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_cancion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_cancion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Consultar canción con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_titulo Cancion.tituloCancion%TYPE;
+    v_duracion Cancion.duracion%TYPE;
+    v_año Cancion.año%TYPE;
+BEGIN
+    PA_CATALOGO_CANCIONES.consultar_cancion(
+        p_idCancion => 99999,
+        p_titulo => v_titulo,
+        p_duracion => v_duracion,
+        p_año => v_año
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_cancion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_cancion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar canción con ID inexistente
+BEGIN
+    PA_CATALOGO_CANCIONES.eliminar_cancion(p_idCancion => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_cancion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_cancion: ID inexistente rechazado');
+END;
+/
+-- PA_USUARIO
+
+-- ERROR: Insertar usuario con correo NULL
+BEGIN
+    PA_USUARIO.insertar_usuario(
+        p_nombreUsuario => 'usuarioSinCorreo',
+        p_correo => NULL,
+        p_contraseña => 'pass123',
+        p_descripcionPerfil => 'Sin correo'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_usuario: debio fallar por correo NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_usuario: correo NULL rechazado');
+END;
+/
+
+-- ERROR: Insertar usuario con nombre NULL
+BEGIN
+    PA_USUARIO.insertar_usuario(
+        p_nombreUsuario => NULL,
+        p_correo => 'sinNombre@email.com',
+        p_contraseña => 'pass123',
+        p_descripcionPerfil => 'Sin nombre'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_usuario: debio fallar por nombre NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_usuario: nombre NULL rechazado');
+END;
+/
+
+-- ERROR: Actualizar usuario con ID inexistente
+BEGIN
+    PA_USUARIO.actualizar_usuario(
+        p_idUsuario => 99999,
+        p_correo => 'noexiste@email.com',
+        p_contraseña => 'pass',
+        p_descripcionPerfil => 'Nadie'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_usuario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_usuario: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Consultar usuario con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_nombre Usuario.nombreUsuario%TYPE;
+    v_correo Usuario.correo%TYPE;
+    v_descripcion Usuario.descripcionPerfil%TYPE;
+BEGIN
+    PA_USUARIO.consultar_usuario(
+        p_idUsuario => 99999,
+        p_nombreUsuario => v_nombre,
+        p_correo => v_correo,
+        p_descripcionPerfil => v_descripcion
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_usuario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_usuario: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar usuario con ID inexistente
+BEGIN
+    PA_USUARIO.eliminar_usuario(p_idUsuario => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_usuario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_usuario: ID inexistente rechazado');
+END;
+/
+-- PA_PERFIL_USUARIO
+-- ERROR: Agregar streaming con FK de usuario inexistente
+BEGIN
+    PA_PERFIL_USUARIO.agregar_streaming(
+        p_idUsuario => 99999,
+        p_plataforma => 'Spotify'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - agregar_streaming: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - agregar_streaming: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Agregar streaming con plataforma NULL
+BEGIN
+    PA_PERFIL_USUARIO.agregar_streaming(
+        p_idUsuario => 1,
+        p_plataforma => NULL
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - agregar_streaming: debio fallar por plataforma NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - agregar_streaming: plataforma NULL rechazada');
+END;
+/
+
+-- ERROR: Asignar membresía con FK de usuario inexistente
+BEGIN
+    PA_PERFIL_USUARIO.asignar_membresia(
+        p_idUsuario => 99999,
+        p_fechaInicio => SYSDATE,
+        p_fechaFin => ADD_MONTHS(SYSDATE, 1),
+        p_estado => 'activa',
+        p_tipo => 'premium'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_membresia: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_membresia: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Asignar membresía duplicada (PK repetida)
+BEGIN
+    PA_PERFIL_USUARIO.asignar_membresia(
+        p_idUsuario => 1,
+        p_fechaInicio => SYSDATE,
+        p_fechaFin => ADD_MONTHS(SYSDATE, 1),
+        p_estado => 'activa',
+        p_tipo => 'premium'
+    );
+    PA_PERFIL_USUARIO.asignar_membresia(
+        p_idUsuario => 1,
+        p_fechaInicio => SYSDATE,
+        p_fechaFin => ADD_MONTHS(SYSDATE, 1),
+        p_estado => 'activa',
+        p_tipo => 'premium'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_membresia: debio fallar por PK duplicada');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_membresia: PK duplicada rechazada');
+END;
+/
+
+-- ERROR: Actualizar membresía con ID inexistente
+BEGIN
+    PA_PERFIL_USUARIO.actualizar_membresia(
+        p_idUsuario => 99999,
+        p_fechaFin => ADD_MONTHS(SYSDATE, 3),
+        p_estado => 'activa',
+        p_tipo => 'premium'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_membresia: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_membresia: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Consultar membresía con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_estado UsuarioMembresia.estadoMembresia%TYPE;
+    v_tipo UsuarioMembresia.tipoMembresia%TYPE;
+    v_fechaFin UsuarioMembresia.fechaFinMembresia%TYPE;
+BEGIN
+    PA_PERFIL_USUARIO.consultar_membresia(
+        p_idUsuario => 99999,
+        p_estado => v_estado,
+        p_tipo => v_tipo,
+        p_fechaFin => v_fechaFin
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_membresia: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_membresia: ID inexistente rechazado');
+END;
+/
+
+-- PA_ADMIN_USUARIOS
+-- ERROR: Suspender usuario con ID inexistente
+BEGIN
+    PA_ADMIN_USUARIOS.suspender_usuario(p_idUsuario => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - suspender_usuario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - suspender_usuario: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Reactivar usuario con ID inexistente
+BEGIN
+    PA_ADMIN_USUARIOS.reactivar_usuario(p_idUsuario => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - reactivar_usuario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - reactivar_usuario: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Asignar usuario básico con FK inexistente
+BEGIN
+    PA_ADMIN_USUARIOS.asignar_usuario_basico(p_idUsuario => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_usuario_basico: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_usuario_basico: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Asignar usuario básico duplicado (PK repetida)
+BEGIN
+    PA_ADMIN_USUARIOS.asignar_usuario_basico(p_idUsuario => 1);
+    PA_ADMIN_USUARIOS.asignar_usuario_basico(p_idUsuario => 1);
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_usuario_basico: debio fallar por PK duplicada');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_usuario_basico: PK duplicada rechazada');
+END;
+/
+-- PA_PUBLICACION
+-- ERROR: Insertar publicación con FK de usuario inexistente
+BEGIN
+    PA_PUBLICACION.insertar_publicacion(
+        p_contenido => 'Publicacion huerfana',
+        p_idUsuario => 99999,
+        p_idCancion => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_publicacion: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_publicacion: FK usuario inexistente rechazada');
+END;
+/
+-- ERROR: Insertar publicación con FK de canción inexistente
+BEGIN
+    PA_PUBLICACION.insertar_publicacion(
+        p_contenido => 'Publicacion sin cancion',
+        p_idUsuario => 1,
+        p_idCancion => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_publicacion: debio fallar por FK cancion inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_publicacion: FK cancion inexistente rechazada');
+END;
+/
+-- ERROR: Insertar publicación con contenido NULL
+BEGIN
+    PA_PUBLICACION.insertar_publicacion(
+        p_contenido => NULL,
+        p_idUsuario => 1,
+        p_idCancion => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_publicacion: debio fallar por contenido NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_publicacion: contenido NULL rechazado');
+END;
+/
+
+-- ERROR: Actualizar publicación con ID inexistente
+BEGIN
+    PA_PUBLICACION.actualizar_publicacion(
+        p_idPublicacion => 99999,
+        p_contenido => 'Nada'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_publicacion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_publicacion: ID inexistente rechazado');
+END;
+/
+-- ERROR: Consultar publicación con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_contenido Publicacion.contenido%TYPE;
+    v_fecha Publicacion.fechaPublicacion%TYPE;
+    v_likes Publicacion.likes%TYPE;
+BEGIN
+    PA_PUBLICACION.consultar_publicacion(
+        p_idPublicacion => 99999,
+        p_contenido => v_contenido,
+        p_fecha => v_fecha,
+        p_likes => v_likes
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_publicacion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_publicacion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Insertar comentario con FK de publicación inexistente
+BEGIN
+    PA_PUBLICACION.insertar_comentario(
+        p_contenido => 'Comentario huerfano',
+        p_idPublicacion => 99999,
+        p_idUsuario => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_comentario: debio fallar por FK publicacion inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_comentario: FK publicacion inexistente rechazada');
+END;
+/
+
+-- ERROR: Eliminar comentario con ID inexistente
+BEGIN
+    PA_PUBLICACION.eliminar_comentario(p_idComentario => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_comentario: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_comentario: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar publicación con ID inexistente
+BEGIN
+    PA_PUBLICACION.eliminar_publicacion(p_idPublicacion => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_publicacion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_publicacion: ID inexistente rechazado');
+END;
+/
+
+-- PA_RECOMENDACION
+-- ERROR: Insertar recomendación con FK de usuario recomendador inexistente
+BEGIN
+    PA_RECOMENDACION.insertar_recomendacion(
+        p_mensaje => 'Recomendacion sin origen',
+        p_tipo => 'cancion',
+        p_idUsuario => 99999,
+        p_idCancion => 1,
+        p_idDestino => 2
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_recomendacion: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_recomendacion: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar recomendación con FK de canción inexistente
+BEGIN
+    PA_RECOMENDACION.insertar_recomendacion(
+        p_mensaje => 'Recomendacion sin cancion',
+        p_tipo => 'cancion',
+        p_idUsuario => 1,
+        p_idCancion => 99999,
+        p_idDestino => 2
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_recomendacion: debio fallar por FK cancion inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_recomendacion: FK cancion inexistente rechazada');
+END;
+/
+
+-- ERROR: Marcar visualizada con ID inexistente
+BEGIN
+    PA_RECOMENDACION.marcar_visualizada(p_idRecomendacion => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - marcar_visualizada: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - marcar_visualizada: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar recomendación con ID inexistente
+BEGIN
+    PA_RECOMENDACION.eliminar_recomendacion(p_idRecomendacion => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_recomendacion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_recomendacion: ID inexistente rechazado');
+END;
+/
+-- PA_BUSQUEDAS_USUARIO
+-- ERROR: Insertar búsqueda con FK de usuario inexistente
+BEGIN
+    PA_BUSQUEDAS_USUARIO.insertar_busqueda(
+        p_termino => 'Busqueda huerfana',
+        p_idUsuario => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_busqueda: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_busqueda: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar búsqueda con término NULL
+BEGIN
+    PA_BUSQUEDAS_USUARIO.insertar_busqueda(
+        p_termino => NULL,
+        p_idUsuario => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_busqueda: debio fallar por termino NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_busqueda: termino NULL rechazado');
+END;
+/
+
+-- ERROR: Insertar filtro con FK de búsqueda inexistente
+BEGIN
+    PA_BUSQUEDAS_USUARIO.insertar_filtro(
+        p_exito => 1,
+        p_periodo => '2022-2023',
+        p_idGenero => 1,
+        p_idArtista => 1,
+        p_idRegistro => 1,
+        p_idBusqueda => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_filtro: debio fallar por FK busqueda inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_filtro: FK busqueda inexistente rechazada');
+END;
+/
+
+-- ERROR: Eliminar filtro con ID inexistente
+BEGIN
+    PA_BUSQUEDAS_USUARIO.eliminar_filtro(p_idFiltro => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_filtro: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_filtro: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar búsqueda con ID inexistente
+BEGIN
+    PA_BUSQUEDAS_USUARIO.eliminar_busqueda(p_idBusqueda => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_busqueda: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_busqueda: ID inexistente rechazado');
+END;
+/
+
+-- PA_CONFIGURACION_USUARIO
+-- ERROR: Insertar configuración con FK de usuario inexistente
+BEGIN
+    PA_CONFIGURACION_USUARIO.insertar_configuracion(
+        p_perfilPublico => 1,
+        p_quienPuedeSeguir => 'todos',
+        p_quienVeHistorial => 'todos',
+        p_quienVePublicaciones => 'todos',
+        p_notificaciones => 1,
+        p_idUsuario => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_configuracion: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_configuracion: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar configuración duplicada (PK repetida)
+BEGIN
+    PA_CONFIGURACION_USUARIO.insertar_configuracion(
+        p_perfilPublico => 1,
+        p_quienPuedeSeguir => 'todos',
+        p_quienVeHistorial => 'todos',
+        p_quienVePublicaciones => 'todos',
+        p_notificaciones => 1,
+        p_idUsuario => 1
+    );
+    PA_CONFIGURACION_USUARIO.insertar_configuracion(
+        p_perfilPublico => 0,
+        p_quienPuedeSeguir => 'nadie',
+        p_quienVeHistorial => 'nadie',
+        p_quienVePublicaciones => 'nadie',
+        p_notificaciones => 0,
+        p_idUsuario => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_configuracion: debio fallar por PK duplicada');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_configuracion: PK duplicada rechazada');
+END;
+/
+
+-- ERROR: Actualizar configuración con ID inexistente
+BEGIN
+    PA_CONFIGURACION_USUARIO.actualizar_configuracion(
+        p_idUsuario => 99999,
+        p_perfilPublico => 0,
+        p_quienPuedeSeguir => 'nadie',
+        p_quienVeHistorial => 'nadie',
+        p_quienVePublicaciones => 'nadie',
+        p_notificaciones => 0
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_configuracion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_configuracion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Consultar configuración con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_perfilPublico ConfiguracionUsuario.perfilPublico%TYPE;
+    v_quienPuedeSeguir ConfiguracionUsuario.quienPuedeSeguir%TYPE;
+    v_quienVeHistorial ConfiguracionUsuario.quienVeHistorial%TYPE;
+    v_quienVePublicaciones ConfiguracionUsuario.quienVePublicaciones%TYPE;
+    v_notificaciones ConfiguracionUsuario.notificacionesActivas%TYPE;
+BEGIN
+    PA_CONFIGURACION_USUARIO.consultar_configuracion(
+        p_idUsuario => 99999,
+        p_perfilPublico => v_perfilPublico,
+        p_quienPuedeSeguir => v_quienPuedeSeguir,
+        p_quienVeHistorial => v_quienVeHistorial,
+        p_quienVePublicaciones => v_quienVePublicaciones,
+        p_notificaciones => v_notificaciones
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_configuracion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_configuracion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Agregar bloqueo con FK de usuario bloqueado inexistente
+BEGIN
+    PA_CONFIGURACION_USUARIO.agregar_bloqueo(
+        p_idUsuario => 1,
+        p_idUsuarioBloqueado => 99999,
+        p_motivo => 'Bloqueo invalido'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - agregar_bloqueo: debio fallar por FK usuario bloqueado inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - agregar_bloqueo: FK usuario bloqueado inexistente rechazada');
+END;
+/
+
+-- ERROR: Eliminar bloqueo con ID inexistente
+BEGIN
+    PA_CONFIGURACION_USUARIO.eliminar_bloqueo(p_idBloqueo => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_bloqueo: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_bloqueo: ID inexistente rechazado');
+END;
+/
+-- PA_MODERADOR_USUARIOS
+-- ERROR: Insertar reporte con FK de usuario reportante inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.insertar_reporte(
+        p_idReportante => 99999,
+        p_idReportado => 2,
+        p_motivo => 'Reporte invalido',
+        p_descripcion => 'El reportante no existe'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_reporte: debio fallar por FK reportante inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_reporte: FK reportante inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar reporte con FK de usuario reportado inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.insertar_reporte(
+        p_idReportante => 1,
+        p_idReportado => 99999,
+        p_motivo => 'Reporte invalido',
+        p_descripcion => 'El reportado no existe'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_reporte: debio fallar por FK reportado inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_reporte: FK reportado inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar reporte con motivo NULL
+BEGIN
+    PA_MODERADOR_USUARIOS.insertar_reporte(
+        p_idReportante => 1,
+        p_idReportado => 2,
+        p_motivo => NULL,
+        p_descripcion => 'Sin motivo'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_reporte: debio fallar por motivo NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_reporte: motivo NULL rechazado');
+END;
+/
+
+-- ERROR: Actualizar estado de reporte con ID inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.actualizar_estado_reporte(
+        p_idReporte => 99999,
+        p_estado => 'resuelto'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_estado_reporte: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_estado_reporte: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Insertar sanción con FK de reporte inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.insertar_sancion(
+        p_tipo => 'suspension',
+        p_fechaFin => ADD_MONTHS(SYSDATE, 1),
+        p_motivo => 'Sancion sin reporte',
+        p_idReporte => 99999,
+        p_idUsuario => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_sancion: debio fallar por FK reporte inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_sancion: FK reporte inexistente rechazada');
+END;
+/
+
+-- ERROR: Insertar sanción con FK de usuario inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.insertar_sancion(
+        p_tipo => 'suspension',
+        p_fechaFin => ADD_MONTHS(SYSDATE, 1),
+        p_motivo => 'Sancion sin usuario',
+        p_idReporte => 1,
+        p_idUsuario => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_sancion: debio fallar por FK usuario inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_sancion: FK usuario inexistente rechazada');
+END;
+/
+
+-- ERROR: Eliminar sanción con ID inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.eliminar_sancion(p_idSancion => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_sancion: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_sancion: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar reporte con ID inexistente
+BEGIN
+    PA_MODERADOR_USUARIOS.eliminar_reporte(p_idReporte => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_reporte: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_reporte: ID inexistente rechazado');
+END;
+/
+-- PA_ADMIN_CONTENIDO_MUSICAL
+-- ERROR: Actualizar género con ID inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.actualizar_genero(
+        p_idGenero => 99999,
+        p_nombre => 'No Existe',
+        p_descripcion => 'Genero fantasma'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_genero: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_genero: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Actualizar artista con ID inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.actualizar_artista(
+        p_idArtista => 99999,
+        p_nombre => 'No Existe',
+        p_pais => 'Ninguno'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_artista: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_artista: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Asignar género a canción con FK de canción inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.asignar_genero_cancion(
+        p_idCancion => 99999,
+        p_idGenero => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_genero_cancion: debio fallar por FK cancion inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_genero_cancion: FK cancion inexistente rechazada');
+END;
+/
+
+-- ERROR: Asignar género a canción con FK de género inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.asignar_genero_cancion(
+        p_idCancion => 1,
+        p_idGenero => 99999
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_genero_cancion: debio fallar por FK genero inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_genero_cancion: FK genero inexistente rechazada');
+END;
+/
+
+-- ERROR: Asignar género duplicado a canción (PK repetida)
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.asignar_genero_cancion(p_idCancion => 1, p_idGenero => 1);
+    PA_ADMIN_CONTENIDO_MUSICAL.asignar_genero_cancion(p_idCancion => 1, p_idGenero => 1);
+    DBMS_OUTPUT.PUT_LINE('ERROR - asignar_genero_cancion: debio fallar por PK duplicada');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - asignar_genero_cancion: PK duplicada rechazada');
+END;
+/
+
+-- ERROR: Eliminar género con ID inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.eliminar_genero(p_idGenero => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_genero: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_genero: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar artista con ID inexistente
+BEGIN
+    PA_ADMIN_CONTENIDO_MUSICAL.eliminar_artista(p_idArtista => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_artista: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_artista: ID inexistente rechazado');
+END;
+/
+
+-- PA_ARTISTA
+-- ERROR: Insertar artista con nombre NULL
+BEGIN
+    PA_ARTISTA.insertar_artista(
+        p_nombre => NULL,
+        p_pais => 'Colombia',
+        p_añoDebut => 2010
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - insertar_artista: debio fallar por nombre NULL');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - insertar_artista: nombre NULL rechazado');
+END;
+/
+
+-- ERROR: Actualizar artista con ID inexistente
+BEGIN
+    PA_ARTISTA.actualizar_artista(
+        p_idArtista => 99999,
+        p_nombre => 'No Existe',
+        p_pais => 'Ninguno'
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - actualizar_artista: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - actualizar_artista: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Consultar artista con ID inexistente (NO_DATA_FOUND)
+DECLARE
+    v_nombre Artista.nombre%TYPE;
+    v_pais Artista.paisOrigen%TYPE;
+    v_añoDebut Artista.añoDebut%TYPE;
+BEGIN
+    PA_ARTISTA.consultar_artista(
+        p_idArtista => 99999,
+        p_nombre => v_nombre,
+        p_pais => v_pais,
+        p_añoDebut => v_añoDebut
+    );
+    DBMS_OUTPUT.PUT_LINE('ERROR - consultar_artista: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - consultar_artista: ID inexistente rechazado');
+END;
+/
+
+-- ERROR: Eliminar artista con ID inexistente
+BEGIN
+    PA_ARTISTA.eliminar_artista(p_idArtista => 99999);
+    DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_artista: debio fallar por ID inexistente');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('NoOK CORRECTO - eliminar_artista: ID inexistente rechazado');
+END;
+/
