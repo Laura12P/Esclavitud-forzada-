@@ -1,0 +1,820 @@
+--- CRUDI ---
+-- PA_CATALOGO_CANCIONES
+CREATE OR REPLACE PACKAGE BODY PA_CATALOGO_CANCIONES AS
+
+    PROCEDURE insertar_cancion(
+        p_titulo IN Cancion.tituloCancion%TYPE,
+        p_duracion IN Cancion.duracion%TYPE,
+        p_año IN Cancion.año%TYPE,
+        p_idArtista IN Cancion.idArtista%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Cancion (tituloCancion, duracion, año, idArtista)
+        VALUES (p_titulo, p_duracion, p_año, p_idArtista);
+        COMMIT;
+    END insertar_cancion;
+
+    PROCEDURE actualizar_cancion(
+        p_idCancion IN Cancion.idCancion%TYPE,
+        p_titulo IN Cancion.tituloCancion%TYPE,
+        p_duracion IN Cancion.duracion%TYPE
+    ) AS
+    BEGIN
+        UPDATE Cancion
+        SET tituloCancion = p_titulo,
+            duracion      = p_duracion
+        WHERE idCancion = p_idCancion;
+        COMMIT;
+    END actualizar_cancion;
+
+    PROCEDURE eliminar_cancion(
+        p_idCancion IN Cancion.idCancion%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Cancion WHERE idCancion = p_idCancion;
+        COMMIT;
+    END eliminar_cancion;
+
+    PROCEDURE consultar_cancion(
+        p_idCancion IN  Cancion.idCancion%TYPE,
+        p_titulo OUT Cancion.tituloCancion%TYPE,
+        p_duracion OUT Cancion.duracion%TYPE,
+        p_año OUT Cancion.año%TYPE
+    ) AS
+    BEGIN
+        SELECT tituloCancion, duracion, año
+        INTO p_titulo, p_duracion, p_año
+        FROM Cancion
+        WHERE idCancion = p_idCancion;
+    END consultar_cancion;
+
+    PROCEDURE insertar_genero(
+        p_nombre IN Genero.nombreGenero%TYPE,
+        p_descripcion IN Genero.descripcion%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Genero (nombreGenero, descripcion)
+        VALUES (p_nombre, p_descripcion);
+        COMMIT;
+    END insertar_genero;
+
+    PROCEDURE insertar_artista(
+        p_nombre IN Artista.nombre%TYPE,
+        p_pais IN Artista.paisOrigen%TYPE,
+        p_añoDebut IN Artista.añoDebut%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Artista (nombre, paisOrigen, añoDebut)
+        VALUES (p_nombre, p_pais, p_añoDebut);
+        COMMIT;
+    END insertar_artista;
+
+END PA_CATALOGO_CANCIONES;
+/
+
+-- PA_USUARIO
+CREATE OR REPLACE PACKAGE BODY PA_USUARIO AS
+
+    PROCEDURE insertar_usuario(
+        p_nombreUsuario IN Usuario.nombreUsuario%TYPE,
+        p_correo IN Usuario.correo%TYPE,
+        p_contraseña IN Usuario.contraseña%TYPE,
+        p_descripcionPerfil IN Usuario.descripcionPerfil%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Usuario (nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (p_nombreUsuario, p_correo, p_contraseña, SYSDATE, p_descripcionPerfil);
+        COMMIT;
+    END insertar_usuario;
+
+    PROCEDURE actualizar_usuario(
+        p_idUsuario IN Usuario.idUsuario%TYPE,
+        p_correo IN Usuario.correo%TYPE,
+        p_contraseña IN Usuario.contraseña%TYPE,
+        p_descripcionPerfil IN Usuario.descripcionPerfil%TYPE
+    ) AS
+    BEGIN
+        UPDATE Usuario
+        SET correo = p_correo,
+            contraseña = p_contraseña,
+            descripcionPerfil = p_descripcionPerfil
+        WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END actualizar_usuario;
+
+    PROCEDURE eliminar_usuario(
+        p_idUsuario IN Usuario.idUsuario%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Usuario WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END eliminar_usuario;
+
+    PROCEDURE consultar_usuario(
+        p_idUsuario IN  Usuario.idUsuario%TYPE,
+        p_nombreUsuario OUT Usuario.nombreUsuario%TYPE,
+        p_correo OUT Usuario.correo%TYPE,
+        p_descripcionPerfil OUT Usuario.descripcionPerfil%TYPE
+    ) AS
+    BEGIN
+        SELECT nombreUsuario, correo, descripcionPerfil
+        INTO p_nombreUsuario, p_correo, p_descripcionPerfil
+        FROM Usuario
+        WHERE idUsuario = p_idUsuario;
+    END consultar_usuario;
+
+END PA_USUARIO;
+/
+
+-- BODY PA_PERFIL_USUARIO
+CREATE OR REPLACE PACKAGE BODY PA_PERFIL_USUARIO AS
+
+    PROCEDURE agregar_streaming(
+        p_idUsuario IN Usuario_Streaming.idUsuario%TYPE,
+        p_plataforma IN Usuario_Streaming.plataformaStreaming%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Usuario_Streaming (idUsuario, plataformaStreaming)
+        VALUES (p_idUsuario, p_plataforma);
+        COMMIT;
+    END agregar_streaming;
+
+    PROCEDURE eliminar_streaming(
+        p_idUsuario IN Usuario_Streaming.idUsuario%TYPE,
+        p_plataforma IN Usuario_Streaming.plataformaStreaming%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Usuario_Streaming
+        WHERE idUsuario = p_idUsuario
+        AND plataformaStreaming = p_plataforma;
+        COMMIT;
+    END eliminar_streaming;
+
+    PROCEDURE asignar_membresia(
+        p_idUsuario IN UsuarioMembresia.idUsuario%TYPE,
+        p_fechaInicio IN UsuarioMembresia.fechaInicioMembresia%TYPE,
+        p_fechaFin IN UsuarioMembresia.fechaFinMembresia%TYPE,
+        p_estado IN UsuarioMembresia.estadoMembresia%TYPE,
+        p_tipo IN UsuarioMembresia.tipoMembresia%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
+        VALUES (p_idUsuario, p_fechaInicio, p_fechaFin, p_estado, p_tipo);
+        COMMIT;
+    END asignar_membresia;
+
+    PROCEDURE actualizar_membresia(
+        p_idUsuario IN UsuarioMembresia.idUsuario%TYPE,
+        p_fechaFin IN UsuarioMembresia.fechaFinMembresia%TYPE,
+        p_estado IN UsuarioMembresia.estadoMembresia%TYPE,
+        p_tipo IN UsuarioMembresia.tipoMembresia%TYPE
+    ) AS
+    BEGIN
+        UPDATE UsuarioMembresia
+        SET fechaFinMembresia = p_fechaFin,
+            estadoMembresia = p_estado,
+            tipoMembresia = p_tipo
+        WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END actualizar_membresia;
+
+    PROCEDURE consultar_membresia(
+        p_idUsuario IN  UsuarioMembresia.idUsuario%TYPE,
+        p_estado OUT UsuarioMembresia.estadoMembresia%TYPE,
+        p_tipo OUT UsuarioMembresia.tipoMembresia%TYPE,
+        p_fechaFin OUT UsuarioMembresia.fechaFinMembresia%TYPE
+    ) AS
+    BEGIN
+        SELECT estadoMembresia, tipoMembresia, fechaFinMembresia
+        INTO p_estado, p_tipo, p_fechaFin
+        FROM UsuarioMembresia
+        WHERE idUsuario = p_idUsuario;
+    END consultar_membresia;
+
+END PA_PERFIL_USUARIO;
+/
+
+-- PA_ADMIN_USUARIOS
+CREATE OR REPLACE PACKAGE BODY PA_ADMIN_USUARIOS AS
+
+    PROCEDURE suspender_usuario(
+        p_idUsuario IN UsuarioMembresia.idUsuario%TYPE
+    ) AS
+    BEGIN
+        UPDATE UsuarioMembresia
+        SET estadoMembresia = 'suspendida'
+        WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END suspender_usuario;
+
+    PROCEDURE reactivar_usuario(
+        p_idUsuario IN UsuarioMembresia.idUsuario%TYPE
+    ) AS
+    BEGIN
+        UPDATE UsuarioMembresia
+        SET estadoMembresia = 'activa'
+        WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END reactivar_usuario;
+
+    PROCEDURE asignar_usuario_basico(
+        p_idUsuario IN UsuarioBasico.idUsuario%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO UsuarioBasico (idUsuario)
+        VALUES (p_idUsuario);
+        COMMIT;
+    END asignar_usuario_basico;
+
+    PROCEDURE consultar_usuarios_activos(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT u.idUsuario, u.nombreUsuario, u.correo,
+                   m.tipoMembresia, m.fechaInicioMembresia
+            FROM Usuario u
+            JOIN UsuarioMembresia m ON u.idUsuario = m.idUsuario
+            WHERE m.estadoMembresia = 'activa'
+            ORDER BY u.nombreUsuario;
+    END consultar_usuarios_activos;
+
+END PA_ADMIN_USUARIOS;
+/
+-- PA_PUBLICACION
+CREATE OR REPLACE PACKAGE BODY PA_PUBLICACION AS
+
+    PROCEDURE insertar_publicacion(
+        p_contenido IN Publicacion.contenido%TYPE,
+        p_idUsuario IN Publicacion.idUsuario%TYPE,
+        p_idCancion IN Publicacion.idCancion%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Publicacion (contenido, fechaPublicacion, likes, idUsuario, idCancion)
+        VALUES (p_contenido, SYSDATE, 0, p_idUsuario, p_idCancion);
+        COMMIT;
+    END insertar_publicacion;
+
+    PROCEDURE actualizar_publicacion(
+        p_idPublicacion IN Publicacion.idPublicacion%TYPE,
+        p_contenido IN Publicacion.contenido%TYPE
+    ) AS
+    BEGIN
+        UPDATE Publicacion
+        SET contenido = p_contenido
+        WHERE idPublicacion = p_idPublicacion;
+        COMMIT;
+    END actualizar_publicacion;
+
+    PROCEDURE eliminar_publicacion(
+        p_idPublicacion IN Publicacion.idPublicacion%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Publicacion WHERE idPublicacion = p_idPublicacion;
+        COMMIT;
+    END eliminar_publicacion;
+
+    PROCEDURE consultar_publicacion(
+        p_idPublicacion IN  Publicacion.idPublicacion%TYPE,
+        p_contenido OUT Publicacion.contenido%TYPE,
+        p_fecha OUT Publicacion.fechaPublicacion%TYPE,
+        p_likes OUT Publicacion.likes%TYPE
+    ) AS
+    BEGIN
+        SELECT contenido, fechaPublicacion, likes
+        INTO p_contenido, p_fecha, p_likes
+        FROM Publicacion
+        WHERE idPublicacion = p_idPublicacion;
+    END consultar_publicacion;
+
+    PROCEDURE insertar_comentario(
+        p_contenido IN Comentario.contenido%TYPE,
+        p_idPublicacion IN Comentario.idPublicacion%TYPE,
+        p_idUsuario IN Comenta.idUsuario%TYPE
+    ) AS
+        v_idComentario Comentario.idComentario%TYPE;
+    BEGIN
+        INSERT INTO Comentario (contenido, fecha, likes, idPublicacion)
+        VALUES (p_contenido, SYSDATE, 0, p_idPublicacion)
+        RETURNING idComentario INTO v_idComentario;
+
+        INSERT INTO Comenta (idUsuario, idComentario)
+        VALUES (p_idUsuario, v_idComentario);
+        COMMIT;
+    END insertar_comentario;
+
+    PROCEDURE eliminar_comentario(
+        p_idComentario IN Comentario.idComentario%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Comentario WHERE idComentario = p_idComentario;
+        COMMIT;
+    END eliminar_comentario;
+
+END PA_PUBLICACION;
+/
+
+-- PA_RECOMENDACION
+CREATE OR REPLACE PACKAGE BODY PA_RECOMENDACION AS
+
+    PROCEDURE insertar_recomendacion(
+        p_mensaje IN Recomendacion.mensajeRecomendacion%TYPE,
+        p_tipo IN Recomendacion.tipoRecomendacion%TYPE,
+        p_idUsuario IN Recomendacion.idUsuarioRecomendador%TYPE,
+        p_idCancion IN Recomendacion.idCancion%TYPE,
+        p_idDestino IN Recomendacion.idUsuarioDestino%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Recomendacion (
+            fechaRecomendacion, mensajeRecomendacion, tipoRecomendacion,
+            idUsuarioRecomendador, idCancion, idUsuarioDestino, visualizacion
+        )
+        VALUES (SYSDATE, p_mensaje, p_tipo, p_idUsuario, p_idCancion, p_idDestino, 0);
+        COMMIT;
+    END insertar_recomendacion;
+
+    PROCEDURE eliminar_recomendacion(
+        p_idRecomendacion IN Recomendacion.idRecomendacion%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Recomendacion
+        WHERE idRecomendacion = p_idRecomendacion;
+        COMMIT;
+    END eliminar_recomendacion;
+
+    PROCEDURE marcar_visualizada(
+        p_idRecomendacion IN Recomendacion.idRecomendacion%TYPE
+    ) AS
+    BEGIN
+        UPDATE Recomendacion
+        SET visualizacion = 1
+        WHERE idRecomendacion = p_idRecomendacion;
+        COMMIT;
+    END marcar_visualizada;
+
+    PROCEDURE consultar_recomendaciones(
+        p_idDestino IN  Recomendacion.idUsuarioDestino%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT r.idRecomendacion, r.mensajeRecomendacion,
+                   r.tipoRecomendacion, r.fechaRecomendacion,
+                   c.tituloCancion, u.nombreUsuario
+            FROM Recomendacion r
+            JOIN Cancion c  ON r.idCancion = c.idCancion
+            JOIN Usuario u  ON r.idUsuarioRecomendador = u.idUsuario
+            WHERE r.idUsuarioDestino = p_idDestino
+            ORDER BY r.fechaRecomendacion DESC;
+    END consultar_recomendaciones;
+
+END PA_RECOMENDACION;
+/
+
+-- 
+CREATE OR REPLACE PACKAGE BODY PA_BUSQUEDAS_USUARIO AS
+
+    PROCEDURE insertar_busqueda(
+        p_termino IN HistorialBusqueda.terminoBusqueda%TYPE,
+        p_idUsuario IN HistorialBusqueda.idUsuario%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO HistorialBusqueda (terminoBusqueda, fechaBusqueda, idUsuario)
+        VALUES (p_termino, SYSDATE, p_idUsuario);
+        COMMIT;
+    END insertar_busqueda;
+
+    PROCEDURE eliminar_busqueda(
+        p_idBusqueda IN HistorialBusqueda.idBusqueda%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM HistorialBusqueda
+        WHERE idBusqueda = p_idBusqueda;
+        COMMIT;
+    END eliminar_busqueda;
+
+    PROCEDURE insertar_filtro(
+        p_exito IN FiltroBusqueda.exito%TYPE,
+        p_periodo IN FiltroBusqueda.periodo%TYPE,
+        p_idGenero IN FiltroBusqueda.idGenero%TYPE,
+        p_idArtista IN FiltroBusqueda.idArtista%TYPE,
+        p_idRegistro IN FiltroBusqueda.idRegistro%TYPE,
+        p_idBusqueda IN FiltroBusqueda.idBusqueda%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO FiltroBusqueda (
+            fechaIntento, exito, periodo,
+            idGenero, idArtista, idRegistro, idBusqueda
+        )
+        VALUES (SYSDATE, p_exito, p_periodo, p_idGenero, p_idArtista, p_idRegistro, p_idBusqueda);
+        COMMIT;
+    END insertar_filtro;
+
+    PROCEDURE eliminar_filtro(
+        p_idFiltro IN FiltroBusqueda.idFiltro%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM FiltroBusqueda
+        WHERE idFiltro = p_idFiltro;
+        COMMIT;
+    END eliminar_filtro;
+
+    PROCEDURE consultar_historial(
+        p_idUsuario IN  HistorialBusqueda.idUsuario%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT hb.idBusqueda, hb.terminoBusqueda,
+                   hb.fechaBusqueda, fb.exito
+            FROM HistorialBusqueda hb
+            LEFT JOIN FiltroBusqueda fb ON hb.idBusqueda = fb.idBusqueda
+            WHERE hb.idUsuario = p_idUsuario
+            ORDER BY hb.fechaBusqueda DESC;
+    END consultar_historial;
+
+END PA_BUSQUEDAS_USUARIO;
+/
+
+-- CONFIGURACION_USUARIO
+CREATE OR REPLACE PACKAGE BODY PA_CONFIGURACION_USUARIO AS
+
+    PROCEDURE insertar_configuracion(
+        p_perfilPublico IN ConfiguracionUsuario.perfilPublico%TYPE,
+        p_quienPuedeSeguir IN ConfiguracionUsuario.quienPuedeSeguir%TYPE,
+        p_quienVeHistorial IN ConfiguracionUsuario.quienVeHistorial%TYPE,
+        p_quienVePublicaciones IN ConfiguracionUsuario.quienVePublicaciones%TYPE,
+        p_notificaciones IN ConfiguracionUsuario.notificacionesActivas%TYPE,
+        p_idUsuario IN ConfiguracionUsuario.idUsuario%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO ConfiguracionUsuario (
+            perfilPublico, quienPuedeSeguir, quienVeHistorial,
+            quienVePublicaciones, notificacionesActivas, idUsuario
+        )
+        VALUES (
+            p_perfilPublico, p_quienPuedeSeguir, p_quienVeHistorial,
+            p_quienVePublicaciones, p_notificaciones, p_idUsuario
+        );
+        COMMIT;
+    END insertar_configuracion;
+
+    PROCEDURE actualizar_configuracion(
+        p_idUsuario IN ConfiguracionUsuario.idUsuario%TYPE,
+        p_perfilPublico IN ConfiguracionUsuario.perfilPublico%TYPE,
+        p_quienPuedeSeguir IN ConfiguracionUsuario.quienPuedeSeguir%TYPE,
+        p_quienVeHistorial IN ConfiguracionUsuario.quienVeHistorial%TYPE,
+        p_quienVePublicaciones IN ConfiguracionUsuario.quienVePublicaciones%TYPE,
+        p_notificaciones IN ConfiguracionUsuario.notificacionesActivas%TYPE
+    ) AS
+    BEGIN
+        UPDATE ConfiguracionUsuario
+        SET perfilPublico = p_perfilPublico,
+            quienPuedeSeguir = p_quienPuedeSeguir,
+            quienVeHistorial = p_quienVeHistorial,
+            quienVePublicaciones = p_quienVePublicaciones,
+            notificacionesActivas = p_notificaciones
+        WHERE idUsuario = p_idUsuario;
+        COMMIT;
+    END actualizar_configuracion;
+
+    PROCEDURE consultar_configuracion(
+        p_idUsuario IN  ConfiguracionUsuario.idUsuario%TYPE,
+        p_perfilPublico OUT ConfiguracionUsuario.perfilPublico%TYPE,
+        p_quienPuedeSeguir OUT ConfiguracionUsuario.quienPuedeSeguir%TYPE,
+        p_quienVeHistorial OUT ConfiguracionUsuario.quienVeHistorial%TYPE,
+        p_quienVePublicaciones OUT ConfiguracionUsuario.quienVePublicaciones%TYPE,
+        p_notificaciones OUT ConfiguracionUsuario.notificacionesActivas%TYPE
+    ) AS
+    BEGIN
+        SELECT perfilPublico, quienPuedeSeguir, quienVeHistorial,
+               quienVePublicaciones, notificacionesActivas
+        INTO p_perfilPublico, p_quienPuedeSeguir, p_quienVeHistorial,
+             p_quienVePublicaciones, p_notificaciones
+        FROM ConfiguracionUsuario
+        WHERE idUsuario = p_idUsuario;
+    END consultar_configuracion;
+
+    PROCEDURE agregar_bloqueo(
+        p_idUsuario IN ListaNegra.idUsuario%TYPE,
+        p_idUsuarioBloqueado IN ListaNegra.idUsuarioBloqueado%TYPE,
+        p_motivo IN ListaNegra.motivoBloqueo%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO ListaNegra (idUsuario, idUsuarioBloqueado, fechaBloqueo, motivoBloqueo)
+        VALUES (p_idUsuario, p_idUsuarioBloqueado, SYSDATE, p_motivo);
+        COMMIT;
+    END agregar_bloqueo;
+
+    PROCEDURE eliminar_bloqueo(
+        p_idBloqueo IN ListaNegra.idBloqueo%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM ListaNegra
+        WHERE idBloqueo = p_idBloqueo;
+        COMMIT;
+    END eliminar_bloqueo;
+
+    PROCEDURE consultar_bloqueados(
+        p_idUsuario IN  ListaNegra.idUsuario%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT ln.idBloqueo, u.nombreUsuario,
+                   ln.fechaBloqueo, ln.motivoBloqueo
+            FROM ListaNegra ln
+            JOIN Usuario u ON ln.idUsuarioBloqueado = u.idUsuario
+            WHERE ln.idUsuario = p_idUsuario
+            ORDER BY ln.fechaBloqueo DESC;
+    END consultar_bloqueados;
+
+END PA_CONFIGURACION_USUARIO;
+/
+
+-- PA_MODERADOR_USUARIOS
+CREATE OR REPLACE PACKAGE BODY PA_MODERADOR_USUARIOS AS
+
+    PROCEDURE insertar_reporte(
+        p_idReportante IN Reporte.idUsuarioReportante%TYPE,
+        p_idReportado IN Reporte.idUsuarioReportado%TYPE,
+        p_motivo IN Reporte.motivoReporte%TYPE,
+        p_descripcion IN Reporte.descripcionReporte%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Reporte (
+            idUsuarioReportante, idUsuarioReportado,
+            motivoReporte, descripcionReporte,
+            fechaReporte, estadoReporte
+        )
+        VALUES (
+            p_idReportante, p_idReportado,
+            p_motivo, p_descripcion,
+            SYSDATE, 'pendiente'
+        );
+        COMMIT;
+    END insertar_reporte;
+
+    PROCEDURE actualizar_estado_reporte(
+        p_idReporte IN Reporte.idReporte%TYPE,
+        p_estado IN Reporte.estadoReporte%TYPE
+    ) AS
+    BEGIN
+        UPDATE Reporte
+        SET estadoReporte = p_estado
+        WHERE idReporte = p_idReporte;
+        COMMIT;
+    END actualizar_estado_reporte;
+
+    PROCEDURE eliminar_reporte(
+        p_idReporte IN Reporte.idReporte%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Reporte
+        WHERE idReporte = p_idReporte;
+        COMMIT;
+    END eliminar_reporte;
+
+    PROCEDURE insertar_sancion(
+        p_tipo IN Sancion.tipoSancion%TYPE,
+        p_fechaFin IN Sancion.fechaFin%TYPE,
+        p_motivo IN Sancion.motivoSancion%TYPE,
+        p_idReporte IN Sancion.idReporte%TYPE,
+        p_idUsuario IN Sancion.idUsuarioReportado%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Sancion (
+            tipoSancion, fechaInicio, fechaFin,
+            motivoSancion, idReporte, idUsuarioReportado
+        )
+        VALUES (
+            p_tipo, SYSDATE, p_fechaFin,
+            p_motivo, p_idReporte, p_idUsuario
+        );
+        COMMIT;
+    END insertar_sancion;
+
+    PROCEDURE eliminar_sancion(
+        p_idSancion IN Sancion.idSancion%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Sancion
+        WHERE idSancion = p_idSancion;
+        COMMIT;
+    END eliminar_sancion;
+
+END PA_MODERADOR_USUARIOS;
+/
+
+-- PA_REPORTES_SANCIONES
+CREATE OR REPLACE PACKAGE BODY PA_REPORTES_SANCIONES AS
+
+    PROCEDURE consultar_reportes_pendientes(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT r.idReporte, u.nombreUsuario AS reportado,
+                   r.motivoReporte, r.descripcionReporte,
+                   r.fechaReporte, r.estadoReporte
+            FROM Reporte r
+            JOIN Usuario u ON r.idUsuarioReportado = u.idUsuario
+            WHERE r.estadoReporte = 'pendiente'
+            ORDER BY r.fechaReporte DESC;
+    END consultar_reportes_pendientes;
+
+    PROCEDURE consultar_sanciones_activas(
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT s.idSancion, s.tipoSancion,
+                   s.fechaInicio, s.fechaFin,
+                   s.motivoSancion, u.nombreUsuario AS sancionado
+            FROM Sancion s
+            JOIN Usuario u ON s.idUsuarioReportado = u.idUsuario
+            WHERE s.fechaFin > SYSDATE OR s.fechaFin IS NULL
+            ORDER BY s.fechaInicio DESC;
+    END consultar_sanciones_activas;
+
+    PROCEDURE consultar_reportes_por_usuario(
+        p_idUsuario IN  Reporte.idUsuarioReportado%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT r.idReporte, r.motivoReporte,
+                   r.descripcionReporte, r.fechaReporte,
+                   r.estadoReporte
+            FROM Reporte r
+            WHERE r.idUsuarioReportado = p_idUsuario
+            ORDER BY r.fechaReporte DESC;
+    END consultar_reportes_por_usuario;
+
+    PROCEDURE consultar_sanciones_por_usuario(
+        p_idUsuario IN  Sancion.idUsuarioReportado%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT s.idSancion, s.tipoSancion,
+                   s.fechaInicio, s.fechaFin,
+                   s.motivoSancion
+            FROM Sancion s
+            WHERE s.idUsuarioReportado = p_idUsuario
+            ORDER BY s.fechaInicio DESC;
+    END consultar_sanciones_por_usuario;
+
+END PA_REPORTES_SANCIONES;
+/
+
+-- PA_ADMIN_CONTENIDO_MUSICAL
+CREATE OR REPLACE PACKAGE BODY PA_ADMIN_CONTENIDO_MUSICAL AS
+
+    PROCEDURE eliminar_genero(
+        p_idGenero IN Genero.idGenero%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Genero
+        WHERE idGenero = p_idGenero;
+        COMMIT;
+    END eliminar_genero;
+
+    PROCEDURE actualizar_genero(
+        p_idGenero IN Genero.idGenero%TYPE,
+        p_nombre IN Genero.nombreGenero%TYPE,
+        p_descripcion IN Genero.descripcion%TYPE
+    ) AS
+    BEGIN
+        UPDATE Genero
+        SET nombreGenero = p_nombre,
+            descripcion = p_descripcion
+        WHERE idGenero = p_idGenero;
+        COMMIT;
+    END actualizar_genero;
+
+    PROCEDURE eliminar_artista(
+        p_idArtista IN Artista.idArtista%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Artista
+        WHERE idArtista = p_idArtista;
+        COMMIT;
+    END eliminar_artista;
+
+    PROCEDURE actualizar_artista(
+        p_idArtista IN Artista.idArtista%TYPE,
+        p_nombre IN Artista.nombre%TYPE,
+        p_pais IN Artista.paisOrigen%TYPE
+    ) AS
+    BEGIN
+        UPDATE Artista
+        SET nombre = p_nombre,
+            paisOrigen = p_pais
+        WHERE idArtista = p_idArtista;
+        COMMIT;
+    END actualizar_artista;
+
+    PROCEDURE asignar_genero_cancion(
+        p_idCancion IN Tiene_Genero.idCancion%TYPE,
+        p_idGenero IN Tiene_Genero.idGenero%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Tiene_Genero (idCancion, idGenero)
+        VALUES (p_idCancion, p_idGenero);
+        COMMIT;
+    END asignar_genero_cancion;
+
+    PROCEDURE quitar_genero_cancion(
+        p_idCancion IN Tiene_Genero.idCancion%TYPE,
+        p_idGenero IN Tiene_Genero.idGenero%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Tiene_Genero
+        WHERE idCancion = p_idCancion
+        AND idGenero = p_idGenero;
+        COMMIT;
+    END quitar_genero_cancion;
+
+END PA_ADMIN_CONTENIDO_MUSICAL;
+/
+
+-- PA_ARTISTA
+CREATE OR REPLACE PACKAGE BODY PA_ARTISTA AS
+
+    PROCEDURE insertar_artista(
+        p_nombre IN Artista.nombre%TYPE,
+        p_pais IN Artista.paisOrigen%TYPE,
+        p_añoDebut IN Artista.añoDebut%TYPE
+    ) AS
+    BEGIN
+        INSERT INTO Artista (nombre, paisOrigen, añoDebut)
+        VALUES (p_nombre, p_pais, p_añoDebut);
+        COMMIT;
+    END insertar_artista;
+
+    PROCEDURE actualizar_artista(
+        p_idArtista IN Artista.idArtista%TYPE,
+        p_nombre IN Artista.nombre%TYPE,
+        p_pais IN Artista.paisOrigen%TYPE
+    ) AS
+    BEGIN
+        UPDATE Artista
+        SET nombre = p_nombre,
+            paisOrigen = p_pais
+        WHERE idArtista = p_idArtista;
+        COMMIT;
+    END actualizar_artista;
+
+    PROCEDURE eliminar_artista(
+        p_idArtista IN Artista.idArtista%TYPE
+    ) AS
+    BEGIN
+        DELETE FROM Artista
+        WHERE idArtista = p_idArtista;
+        COMMIT;
+    END eliminar_artista;
+
+    PROCEDURE consultar_artista(
+        p_idArtista IN  Artista.idArtista%TYPE,
+        p_nombre OUT Artista.nombre%TYPE,
+        p_pais OUT Artista.paisOrigen%TYPE,
+        p_añoDebut OUT Artista.añoDebut%TYPE
+    ) AS
+    BEGIN
+        SELECT nombre, paisOrigen, añoDebut
+        INTO p_nombre, p_pais, p_añoDebut
+        FROM Artista
+        WHERE idArtista = p_idArtista;
+    END consultar_artista;
+
+    PROCEDURE consultar_canciones_artista(
+        p_idArtista IN  Artista.idArtista%TYPE,
+        p_cursor OUT SYS_REFCURSOR
+    ) AS
+    BEGIN
+        OPEN p_cursor FOR
+            SELECT c.idCancion, c.tituloCancion,
+                   c.duracion, c.año
+            FROM Cancion c
+            WHERE c.idArtista = p_idArtista
+            ORDER BY c.año DESC;
+    END consultar_canciones_artista;
+
+END PA_ARTISTA;
+/
+
+-- DROP DE ESPECIFICACIONES (PACKAGE)
+DROP PACKAGE PA_CATALOGO_CANCIONES;
+DROP PACKAGE PA_USUARIO;
+DROP PACKAGE PA_PERFIL_USUARIO;
+DROP PACKAGE PA_ADMIN_USUARIOS;
+DROP PACKAGE PA_PUBLICACION;
+DROP PACKAGE PA_RECOMENDACION;
+DROP PACKAGE PA_BUSQUEDAS_USUARIO;
+DROP PACKAGE PA_CONFIGURACION_USUARIO;
+DROP PACKAGE PA_MODERADOR_USUARIOS;
+DROP PACKAGE PA_REPORTES_SANCIONES;
+DROP PACKAGE PA_ADMIN_CONTENIDO_MUSICAL;
+DROP PACKAGE PA_ARTISTA;
+
