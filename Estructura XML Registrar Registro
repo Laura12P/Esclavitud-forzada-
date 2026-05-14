@@ -1,0 +1,73 @@
+-- DTD propuesto ---
+<!DOCTYPE revisDTD propuestoion [
+  <!ELEMENT revision (revisiones)>
+  <!ELEMENT revisiones (item+)>
+  <!ELEMENT item (numeroRevision, revisor, fecha, observacion, resultado)>
+  <!ELEMENT numeroRevision (#PCDATA)>
+  <!ELEMENT revisor       (#PCDATA)>
+  <!ELEMENT fecha         (#PCDATA)>
+  <!ELEMENT observacion   (#PCDATA)>
+  <!ELEMENT resultado     (#PCDATA)>
+  <!ATTLIST resultado
+      estado (aprobado | rechazado | pendiente) #REQUIRED
+  >
+]>
+
+---Ejemplo Correcto---
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE revision [
+  <!ELEMENT revision (revisiones)>
+  <!ELEMENT revisiones (item+)>
+  <!ELEMENT item (numeroRevision, revisor, fecha, observacion, resultado)>
+  <!ELEMENT numeroRevision (#PCDATA)>
+  <!ELEMENT revisor       (#PCDATA)>
+  <!ELEMENT fecha         (#PCDATA)>
+  <!ELEMENT observacion   (#PCDATA)>
+  <!ELEMENT resultado     (#PCDATA)>
+  <!ATTLIST resultado
+      estado (aprobado | rechazado | pendiente) #REQUIRED
+  >
+]>
+<revision>
+  <revisiones>
+    <item>
+      <numeroRevision>1</numeroRevision>
+      <revisor>3</revisor>
+      <fecha>2025-04-10</fecha>
+      <observacion>Tiempo verificado, segmento con descenso pronunciado</observacion>
+      <resultado estado="aprobado">Registro validado sin observaciones</resultado>
+    </item>
+    <item>
+      <numeroRevision>2</numeroRevision>
+      <revisor>5</revisor>
+      <fecha>2025-04-12</fecha>
+      <observacion>Segunda revision por solicitud del ciclista</observacion>
+      <resultado estado="aprobado">Confirmado tras segunda revision</resultado>
+    </item>
+  </revisiones>
+</revision>
+
+--- Ejemplo Incorrecto ---
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE revision [
+  <!ELEMENT revision (revisiones)>
+  <!ELEMENT revisiones (item+)>
+  <!ELEMENT item (numeroRevision, revisor, fecha, observacion, resultado)>
+  <!ELEMENT numeroRevision (#PCDATA)>
+  <!ELEMENT revisor       (#PCDATA)>
+  <!ELEMENT fecha         (#PCDATA)>
+  <!ELEMENT observacion   (#PCDATA)>
+  <!ELEMENT resultado     (#PCDATA)>
+  <!ATTLIST resultado
+      estado (aprobado | rechazado | pendiente) #REQUIRED
+  >
+]>
+<revision>
+  <revisiones>
+    <item>
+      <revisor>3</revisor>
+      <fecha>2025-04-10</fecha>
+      <resultado estado="cancelado">Registro cancelado</resultado>
+    </item>
+  </revisiones>
+</revision>
