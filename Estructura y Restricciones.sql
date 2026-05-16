@@ -18,7 +18,6 @@ DROP TABLE UsuarioBasico;
 DROP TABLE UsuarioMembresia;
 DROP TABLE Usuario_Streaming;
 DROP TABLE Usuario;
-DROP TABLE Tiene_Genero;
 DROP TABLE Cancion;
 DROP TABLE Artista;
 DROP TABLE Genero;
@@ -279,6 +278,9 @@ ALTER TABLE Recomendacion
 ALTER TABLE ConfiguracionUsuario
     ADD CONSTRAINT pk_configuracion_usuario PRIMARY KEY (idConfiguracion, idUsuario);
 
+ALTER TABLE ConfiguracionUsuario
+    ADD CONSTRAINT uk_config_usuario UNIQUE (idUsuario);
+
 ALTER TABLE ListaNegra
     ADD CONSTRAINT pk_lista_negra PRIMARY KEY (idBloqueo);
 
@@ -428,8 +430,7 @@ ALTER TABLE FiltroBusqueda
         ON DELETE SET NULL;
 
 ALTER TABLE FiltroBusqueda
-    ADD CONSTRAINT fk_FB_Busqueda FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda)
-        ON DELETE CASCADE;
+    ADD CONSTRAINT fk_FB_Busqueda FOREIGN KEY (idBusqueda) REFERENCES HistorialBusqueda(idBusqueda);
 
 --------------------------------------------------------------
 ----------------------- PoblarOk -----------------------------
@@ -747,126 +748,3 @@ DELETE FROM Tiene_Genero;
 DELETE FROM Cancion;
 DELETE FROM Artista;
 DELETE FROM Genero;
-
---------------------------------- Consultas --------------------------------------------------
-
--- 1. Usuarios que escucharon canciones del artista (últimos 30 días)
-SELECT c.tituloCancion, COUNT(h.idRegistro) AS reproducciones, COUNT(DISTINCT h.idUsuario) AS total_oyentes
-FROM Cancion c
-JOIN Historial_Musical h ON c.idCancion = h.idCancion
-WHERE c.idArtista = :idArtista
-AND h.fechaRegistro >= SYSDATE - 30
-GROUP BY c.tituloCancion
-ORDER BY total_oyentes DESC;
-
--- 2. Artistas más escuchados del último mes
-SELECT a.nombre, g.nombreGenero, COUNT(h.idRegistro) AS total_reproducciones
-FROM Artista a
-JOIN Cancion c ON a.idArtista = c.idArtista
-JOIN Historial_Musical h ON c.idCancion = h.idCancion
-JOIN Tiene_Genero tg ON c.idCancion = tg.idCancion
-JOIN Genero g ON tg.idGenero = g.idGenero
-WHERE h.fechaRegistro >= ADD_MONTHS(SYSDATE, -1)
-GROUP BY a.nombre, g.nombreGenero
-ORDER BY total_reproducciones DESC;
-
--- 3. Usuarios que más escuchan al artista
-SELECT u.nombreUsuario, COUNT(h.idRegistro) AS veces_escuchado
-FROM Usuario u
-JOIN Historial_Musical h ON u.idUsuario = h.idUsuario
-JOIN Cancion c ON h.idCancion = c.idCancion
-WHERE c.idArtista = :idArtista
-GROUP BY u.nombreUsuario
-ORDER BY veces_escuchado DESC;
-
--- 4. Historial de búsquedas último mes
-SELECT hb.terminoBusqueda, hb.fechaBusqueda, fb.exito
-FROM HistorialBusqueda hb
-JOIN FiltroBusqueda fb ON hb.idBusqueda = fb.idBusqueda
-WHERE hb.fechaBusqueda >= SYSDATE - 30
-ORDER BY hb.fechaBusqueda DESC;
-
--- 5. Búsquedas fallidas
-SELECT hb.terminoBusqueda, COUNT(*) AS intentos_fallidos, MAX(hb.fechaBusqueda) AS ultimo_intento
-FROM HistorialBusqueda hb
-JOIN FiltroBusqueda fb ON hb.idBusqueda = fb.idBusqueda
-WHERE fb.exito = 0
-GROUP BY hb.terminoBusqueda
-ORDER BY intentos_fallidos DESC;
-
--- 6. Reportes último mes
-SELECT u.nombreUsuario, r.motivoReporte, r.descripcionReporte, r.estadoReporte, r.fechaReporte
-FROM Reporte r
-JOIN Usuario u ON r.idUsuarioReportado = u.idUsuario
-WHERE r.fechaReporte >= SYSDATE - 30
-ORDER BY r.fechaReporte DESC;
-
--- 7. Sanciones activas
-SELECT tipoSancion, motivoSancion, fechaInicio, fechaFin
-FROM Sancion
-WHERE fechaFin > SYSDATE OR fechaFin IS NULL
-ORDER BY fechaInicio DESC;
-
--- 8. Usuarios con más reportes
-SELECT u.nombreUsuario, COUNT(r.idReporte) AS total_reportes
-FROM Usuario u
-JOIN Reporte r ON u.idUsuario = r.idUsuarioReportado
-GROUP BY u.nombreUsuario
-ORDER BY total_reportes DESC;
-
--- 9. Publicaciones con más likes
-SELECT p.contenido, ptc.tipoContenido, p.likes
-FROM Publicacion p
-LEFT JOIN Publicacion_TipoContenido ptc
-    ON p.idPublicacion = ptc.idPublicacion
-WHERE p.idUsuario = :idUsuario AND p.fechaPublicacion >= SYSDATE - 30
-ORDER BY p.likes DESC;
-
--- 10. Historial musical
-SELECT notaPersonal, fechaRegistro
-FROM Historial_Musical
-WHERE idUsuario = :idUsuario AND fechaRegistro >= SYSDATE - 30
-ORDER BY fechaRegistro DESC;
-
--- 11. Cantidad de publicaciones
-SELECT COUNT(*) AS total_publicaciones, MAX(fechaPublicacion) AS ultima_publicacion
-FROM Publicacion
-WHERE idUsuario = :idUsuario
-AND fechaPublicacion BETWEEN :fechaInicio AND :fechaFin;
-
--- 12. Usuarios bloqueados
-SELECT u.nombreUsuario, ln.fechaBloqueo, ln.motivoBloqueo
-FROM ListaNegra ln
-JOIN Usuario u ON ln.idUsuarioBloqueado = u.idUsuario
-WHERE ln.idUsuario = :idUsuario
-ORDER BY ln.fechaBloqueo DESC;
-
--- 13. Configuración usuario
-SELECT quienVeHistorial, perfilPublico, notificacionesActivas
-FROM ConfiguracionUsuario
-WHERE idUsuario = :idUsuario;
-
--- 14. Veces bloqueado
-SELECT COUNT(*) AS veces_bloqueado, MAX(fechaBloqueo) AS ultimo_bloqueo
-FROM ListaNegra
-WHERE idUsuarioBloqueado = :idUsuario;
-
--- 15. Recomendaciones recibidas
-SELECT mensajeRecomendacion, tipoRecomendacion, fechaRecomendacion
-FROM Recomendacion
-WHERE idUsuarioDestino = :idUsuario AND fechaRecomendacion >= SYSDATE - 30
-ORDER BY fechaRecomendacion DESC;
-
--- 16. Recomendaciones por tipo
-SELECT tipoRecomendacion, COUNT(*) AS total
-FROM Recomendacion
-WHERE idUsuarioDestino = :idUsuario
-GROUP BY tipoRecomendacion;
-
--- 17. Quién más recomienda
-SELECT u.nombreUsuario, COUNT(*) AS total_recomendaciones, MAX(r.fechaRecomendacion) AS ultima_fecha
-FROM Recomendacion r
-JOIN Usuario u ON r.idUsuarioRecomendador = u.idUsuario
-WHERE r.idUsuarioDestino = :idUsuario
-GROUP BY u.nombreUsuario
-ORDER BY total_recomendaciones DESC;

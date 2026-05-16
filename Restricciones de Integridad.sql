@@ -259,10 +259,10 @@ CREATE OR REPLACE TRIGGER trg_cancion_insert
 BEFORE INSERT ON Cancion
 FOR EACH ROW
 BEGIN
-    SELECT MAX(idCancion) + 1 INTO :NEW.idCancion FROM Cancion;
-
+    SELECT NVL(MAX(idCancion), 0) + 1 INTO :NEW.idCancion FROM Cancion;
+ 
     IF EXTRACT(YEAR FROM :NEW.año) > EXTRACT(YEAR FROM SYSDATE) THEN
-        RAISE_APPLICATION_ERROR(-20001,'Año no puede ser futuro');
+        RAISE_APPLICATION_ERROR(-20001, 'Año no puede ser futuro');
     END IF;
 END;
 /
@@ -282,6 +282,23 @@ BEGIN
 END;
 /
 
+-- idArtista se genera automaticamente
+CREATE OR REPLACE TRIGGER trg_artista_insert
+BEFORE INSERT ON Artista
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idArtista), 0) + 1 INTO :NEW.idArtista FROM Artista;
+END;
+/
+
+-- idGenero se genera automaticamente
+CREATE OR REPLACE TRIGGER trg_genero_insert
+BEFORE INSERT ON Genero
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idGenero), 0) + 1 INTO :NEW.idGenero FROM Genero;
+END;
+/
 ------------------------------------------------------------------
 -------------------- REGISTRAR RECOMENDACIÓN ---------------------
 ------------------------------------------------------------------
@@ -357,6 +374,24 @@ BEGIN
 END;
 /
 
+-- idAutomatico en Historial_Musical
+CREATE OR REPLACE TRIGGER trg_historial_musical_insert
+BEFORE INSERT ON Historial_Musical
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idRegistro), 0) + 1 INTO :NEW.idRegistro FROM Historial_Musical;
+END;
+/
+
+-- idAutomatico en Comentario
+CREATE OR REPLACE TRIGGER trg_comentario_insert
+BEFORE INSERT ON Comentario
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idComentario), 0) + 1 INTO :NEW.idComentario FROM Comentario;
+END;
+/
+
 ------------------------------------------------------------------------------
 -------------------- MANTENER PERFIL DE USUARIO ------------------------------
 ------------------------------------------------------------------------------
@@ -380,6 +415,29 @@ BEGIN
 END;
 /
 
+-- No se permite la eliminación de un usuario con membresía 
+CREATE OR REPLACE TRIGGER trg_usuario_delete
+BEFORE DELETE ON Usuario
+FOR EACH ROW
+DECLARE
+    v_estado UsuarioMembresia.estadoMembresia%TYPE;
+BEGIN
+    BEGIN
+        SELECT estadoMembresia
+        INTO   v_estado
+        FROM   UsuarioMembresia
+        WHERE  idUsuario = :OLD.idUsuario;
+ 
+        IF v_estado = 'activa' THEN
+            RAISE_APPLICATION_ERROR(-20017,
+                'No se puede eliminar un usuario con membresía activa');
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN NULL; -- sin membresía: se permite eliminar
+    END;
+END;
+/
+
 -----------------------------------------------------------------------------------
 -------------------- MANTENER BÚSQUEDAS USUARIO -----------------------------------
 -----------------------------------------------------------------------------------
@@ -397,6 +455,14 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE TRIGGER trg_historial_busqueda_insert
+BEFORE INSERT ON HistorialBusqueda
+FOR EACH ROW
+BEGIN
+    SELECT NVL(MAX(idBusqueda), 0) + 1 INTO :NEW.idBusqueda FROM HistorialBusqueda;
+END;
+/
+ 
 --  no modificar ids ni fechas
 CREATE OR REPLACE TRIGGER trg_filtro_update
 BEFORE UPDATE ON FiltroBusqueda
@@ -416,6 +482,25 @@ FOR EACH ROW
 BEGIN
     IF :OLD.exito = 1 THEN
         RAISE_APPLICATION_ERROR(-20013,'No eliminar filtro exitoso');
+    END IF;
+END;
+/
+
+-- Un historial solo se elimina si su filtro ya fue eliminado
+
+CREATE OR REPLACE TRIGGER trg_historial_busqueda_delete
+BEFORE DELETE ON HistorialBusqueda
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM   FiltroBusqueda
+    WHERE  idBusqueda = :OLD.idBusqueda;
+ 
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20018,
+            'Debe eliminar primero los filtros asociados a esta búsqueda');
     END IF;
 END;
 /
@@ -505,15 +590,15 @@ END;
 
 -- GRAN CONCEPTO: CANCIÓN
  
-INSERT INTO Genero VALUES (8, 'Rock', 'Musica con guitarras electricas y baterias');
-INSERT INTO Genero VALUES (11, 'Pop', 'Musica popular de consumo masivo');
-INSERT INTO Genero VALUES (14, 'Jazz', 'Genero afroamericano de improvisacion');
-INSERT INTO Genero VALUES (12, 'Reggaeton', 'Ritmo urbano de origen caribeño');
+INSERT INTO Genero (nombreGenero, descripcion) VALUES ('Rock Disparador', 'Musica con guitarras electricas y baterias');
+INSERT INTO Genero (nombreGenero, descripcion) VALUES ('Pop Disparador', 'Musica popular de consumo masivo');
+INSERT INTO Genero (nombreGenero, descripcion) VALUES ('Jazz Disparador', 'Genero afroamericano de improvisacion');
+INSERT INTO Genero (nombreGenero, descripcion) VALUES ('Reggaeton Disparador', 'Ritmo urbano de origen caribeño');
  
-INSERT INTO Artista VALUES (null, 'The Beatles', 'Reino Unido', TO_DATE('1960-01-01','YYYY-MM-DD'));
-INSERT INTO Artista VALUES (2, 'Taylor Swift', 'Estados Unidos', TO_DATE('2006-06-01','YYYY-MM-DD'));
-INSERT INTO Artista VALUES (3, 'Bad Bunny', 'Puerto Rico', TO_DATE('2016-01-01','YYYY-MM-DD'));
-INSERT INTO Artista VALUES (4, 'Miles Davis', 'Estados Unidos', TO_DATE('1944-01-01','YYYY-MM-DD'));
+INSERT INTO Artista (nombre, paisOrigen, añoDebut) VALUES ('The Beatles Disparador', 'Reino Unido', TO_DATE('1960-01-01','YYYY-MM-DD'));
+INSERT INTO Artista (nombre, paisOrigen, añoDebut) VALUES ('Queen Disparador', 'Reino Unido', TO_DATE('1970-01-01','YYYY-MM-DD'));
+INSERT INTO Artista (nombre, paisOrigen, añoDebut) VALUES ('Bad Bunny Disparador', 'Puerto Rico', TO_DATE('2016-01-01','YYYY-MM-DD'));
+INSERT INTO Artista (nombre, paisOrigen, añoDebut) VALUES ('Miles Davis Disparador', 'Estados Unidos', TO_DATE('1944-01-01','YYYY-MM-DD'));
  
 INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
     VALUES (0, 'Let It Be', 243, TO_DATE('1970-05-08','YYYY-MM-DD'), 1);
@@ -527,21 +612,69 @@ INSERT INTO Cancion (idCancion, tituloCancion, duracion, año, idArtista)
 -- GRAN CONCEPTO: USUARIO
 
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (0, 'juangomez',  'juan@gmail.com', 'Password1', SYSDATE, 'Fan del rock');
+    VALUES (0, 'juangomezc',  'juan.trg@moodheard.test', 'Password1', SYSDATE, 'Fan del rock');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (0, 'mariaperez', 'maria@gmail.com', 'Segura456', SYSDATE, NULL);
+    VALUES (0, 'mariaperezd', 'maria.trg@moodheard.test', 'Segura456', SYSDATE, NULL);
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (0, 'carlos88',   'carlos@gmail.com', 'Jazz4Ever', SYSDATE, 'Amante del jazz');
+    VALUES (0, 'carlos887',   'carlos.trg@moodheard.test', 'Jazz4Ever', SYSDATE, 'Amante del jazz');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (0, 'adminUser',  'admin@app.com', 'Admin1234', SYSDATE, 'Administrador');
+    VALUES (0, 'adminUsers',  'admin.trg@moodheard.test', 'Admin1234', SYSDATE, 'Administrador');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-    VALUES (0, 'testUser5',  'test5@app.com', 'Test5678x', SYSDATE, NULL);
+    VALUES (0, 'testUser4444',  'test5.trg@moodheard.test', 'Test5678x', SYSDATE, NULL);
  
-INSERT INTO UsuarioBasico VALUES (3);
-INSERT INTO UsuarioBasico VALUES (5);
-INSERT INTO UsuarioMembresia VALUES (1, TO_DATE('2024-01-01','YYYY-MM-DD'), NULL, 'activa', 'premium');
-INSERT INTO UsuarioMembresia VALUES (2, TO_DATE('2023-06-01','YYYY-MM-DD'), TO_DATE('2024-06-01','YYYY-MM-DD'), 'inactiva', 'basica');
-INSERT INTO UsuarioMembresia VALUES (4, TO_DATE('2024-03-01','YYYY-MM-DD'), NULL, 'activa', 'familia');
+DECLARE
+    v_id_usuario NUMBER;
+BEGIN
+    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (0, 'usu_basico_trg1', 'basico1.trg@moodheard.test', 'Password1', SYSDATE, NULL)
+        RETURNING idUsuario INTO v_id_usuario;
+    INSERT INTO UsuarioBasico (idUsuario) VALUES (v_id_usuario);
+END;
+/
+
+DECLARE
+    v_id_usuario NUMBER;
+BEGIN
+    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (0, 'usu_basico_trg2', 'basico2.trg@moodheard.test', 'Password1', SYSDATE, NULL)
+        RETURNING idUsuario INTO v_id_usuario;
+    INSERT INTO UsuarioBasico (idUsuario) VALUES (v_id_usuario);
+END;
+/
+
+DECLARE
+    v_id_usuario NUMBER;
+BEGIN
+    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (0, 'usu_memb_trg1', 'memb1.trg@moodheard.test', 'Password1', SYSDATE, NULL)
+        RETURNING idUsuario INTO v_id_usuario;
+    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
+        VALUES (v_id_usuario, TO_DATE('2024-01-01','YYYY-MM-DD'), NULL, 'activa', 'premium');
+END;
+/
+
+DECLARE
+    v_id_usuario NUMBER;
+BEGIN
+    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (0, 'usu_memb_trg2', 'memb2.trg@moodheard.test', 'Password1', SYSDATE, NULL)
+        RETURNING idUsuario INTO v_id_usuario;
+    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
+        VALUES (v_id_usuario, TO_DATE('2023-06-01','YYYY-MM-DD'), TO_DATE('2024-06-01','YYYY-MM-DD'), 'inactiva', 'basica');
+END;
+/
+
+DECLARE
+    v_id_usuario NUMBER;
+BEGIN
+    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
+        VALUES (0, 'usu_memb_trg3', 'memb3.trg@moodheard.test', 'Password1', SYSDATE, NULL)
+        RETURNING idUsuario INTO v_id_usuario;
+    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
+        VALUES (v_id_usuario, TO_DATE('2024-03-01','YYYY-MM-DD'), NULL, 'activa', 'familia');
+END;
+/
+
 INSERT INTO Usuario_Streaming VALUES (1, 'spotify');
 INSERT INTO Usuario_Streaming VALUES (2, 'apple_music');
 INSERT INTO Usuario_Streaming VALUES (3, 'youtube_music');
@@ -759,15 +892,22 @@ DELETE FROM Sancion WHERE idSancion = (SELECT MAX(idSancion) FROM Sancion WHERE 
 
 DROP TRIGGER trg_cancion_insert;
 DROP TRIGGER trg_cancion_update;
+DROP TRIGGER trg_artista_insert;
+DROP TRIGGER trg_genero_insert;
 DROP TRIGGER trg_reco_insert;
 DROP TRIGGER trg_reco_update;
 DROP TRIGGER trg_reco_delete;
 DROP TRIGGER trg_pub_insert;
 DROP TRIGGER trg_pub_update;
+DROP TRIGGER trg_comentario_insert;
+DROP TRIGGER trg_historial_musical_insert;
 DROP TRIGGER trg_usuario_insert;
+DROP TRIGGER trg_usuario_delete;
 DROP TRIGGER trg_filtro_insert;
+DROP TRIGGER trg_historial_busqueda_insert;
 DROP TRIGGER trg_filtro_update;
 DROP TRIGGER trg_filtro_delete;
+DROP TRIGGER trg_historial_busqueda_delete;
 DROP TRIGGER trg_config_insert;
 DROP TRIGGER trg_lista_n_insert;
 DROP TRIGGER trg_lista_negra_update;
