@@ -1460,3 +1460,299 @@ BEGIN
     PA_PERSONAE.consultarEvaluacionesEncuesta(1);
 END;
 /
+
+
+----------------- Implementacion XML ------------------
+ALTER TABLE registros
+    DROP COLUMN revision;
+
+ALTER TABLE registros
+    ADD revision XMLTYPE; 
+
+----- Insercion de datos en ORACLE con tipo XML ------ 
+
+--------------------------------------
+-------------- PoblarOK --------------
+--------------------------------------
+
+INSERT INTO Registros (
+    numero,
+    fecha,
+    tiempo,
+    posicion,
+    revision,
+    dificultad,
+    comentarios,
+    nombreVersion,
+    nombreSegmento,
+    idParticipante
+)
+VALUES ( 700, SYSDATE, 30, 1, XMLTYPE(
+'
+<!DOCTYPE revision [
+  <!ELEMENT revision (
+      seccionesDuras?,
+      seccionesFaciles?,
+      seccionesDescenso?
+  )>
+
+  <!ELEMENT seccionesDuras (seccion+)>
+  <!ELEMENT seccionesFaciles (seccion+)>
+  <!ELEMENT seccionesDescenso (seccion+)>
+
+  <!ELEMENT seccion (
+      kilometroInicial,
+      kilometroFinal,
+      velocidadPromedio,
+      velocidadMinima,
+      velocidadMaxima,
+      pulsacionesPromedio,
+      potenciaPromedio
+  )>
+
+  <!ELEMENT kilometroInicial (#PCDATA)>
+  <!ELEMENT kilometroFinal (#PCDATA)>
+  <!ELEMENT velocidadPromedio (#PCDATA)>
+  <!ELEMENT velocidadMinima (#PCDATA)>
+  <!ELEMENT velocidadMaxima (#PCDATA)>
+  <!ELEMENT pulsacionesPromedio (#PCDATA)>
+  <!ELEMENT potenciaPromedio (#PCDATA)>
+]>
+
+
+<revision>
+
+  <seccionesDuras>
+
+    <seccion>
+
+      <kilometroInicial>10</kilometroInicial>
+      <kilometroFinal>15</kilometroFinal>
+
+      <velocidadPromedio>28</velocidadPromedio>
+      <velocidadMinima>15</velocidadMinima>
+      <velocidadMaxima>40</velocidadMaxima>
+
+      <pulsacionesPromedio>170</pulsacionesPromedio>
+
+      <potenciaPromedio>320</potenciaPromedio>
+
+    </seccion>
+
+  </seccionesDuras>
+
+  <seccionesDescenso>
+
+    <seccion>
+
+      <kilometroInicial>20</kilometroInicial>
+      <kilometroFinal>25</kilometroFinal>
+
+      <velocidadPromedio>55</velocidadPromedio>
+      <velocidadMinima>40</velocidadMinima>
+      <velocidadMaxima>75</velocidadMaxima>
+
+      <pulsacionesPromedio>130</pulsacionesPromedio>
+
+      <potenciaPromedio>210</potenciaPromedio>
+
+    </seccion>
+
+  </seccionesDescenso>
+
+</revision>
+
+'
+), 3, 'Registro valido', 'V1', 'S1', 1);
+----------------------------------
+------- Consulta: ----------------
+
+SELECT numero, revision
+FROM Registros
+WHERE numero = 700;
+
+----------------------------------------
+-------------- PoblarNOOK --------------
+----------------------------------------
+
+---- Es invalido porque no tiene kilometroFinal, velocidadMaxima y potenciapromedio, son valores obligatorios que asignamos en el DTD 
+---- Además el orden es incorrecto
+INSERT INTO Registros (
+    numero,
+    fecha,
+    tiempo,
+    posicion,
+    revision,
+    dificultad,
+    comentarios,
+    nombreVersion,
+    nombreSegmento,
+    idParticipante
+)
+VALUES (701, SYSDATE, 25, 1, XMLTYPE(
+'
+<!DOCTYPE revision [
+  <!ELEMENT revision (
+      seccionesDuras?,
+      seccionesFaciles?,
+      seccionesDescenso?
+  )>
+
+  <!ELEMENT seccionesDuras (seccion+)>
+  <!ELEMENT seccionesFaciles (seccion+)>
+  <!ELEMENT seccionesDescenso (seccion+)>
+
+  <!ELEMENT seccion (
+      kilometroInicial,
+      kilometroFinal,
+      velocidadPromedio,
+      velocidadMinima,
+      velocidadMaxima,
+      pulsacionesPromedio,
+      potenciaPromedio
+  )>
+
+  <!ELEMENT kilometroInicial (#PCDATA)>
+  <!ELEMENT kilometroFinal (#PCDATA)>
+  <!ELEMENT velocidadPromedio (#PCDATA)>
+  <!ELEMENT velocidadMinima (#PCDATA)>
+  <!ELEMENT velocidadMaxima (#PCDATA)>
+  <!ELEMENT pulsacionesPromedio (#PCDATA)>
+  <!ELEMENT potenciaPromedio (#PCDATA)>
+]>
+
+<revision>
+
+  <seccionesDescenso>
+
+    <seccion>
+
+      <kilometroInicial>20</kilometroInicial>
+
+      <velocidadPromedio>55</velocidadPromedio>
+
+      <velocidadMinima>40</velocidadMinima>
+
+      <pulsacionesPromedio>130</pulsacionesPromedio>
+
+    </seccion>
+
+  </seccionesDescenso>
+
+</revision>
+
+'
+), 2, 'XML invalido', 'V1', 'S1', 1);
+---------------------------------------------------------------
+--- Consultar segmentos que contienen secciones de descensos --
+---------------------------------------------------------------
+
+SELECT nombreVersion, nombreSegmento,
+    EXTRACTVALUE(revision, '/revision/seccionesDescenso/seccion/velocidadMaxima'
+    ) AS velocidadMaxima
+
+FROM Registros
+WHERE EXISTSNODE( revision, '/revision/seccionesDescenso/seccion') = 1
+
+ORDER BY velocidadMaxima DESC;
+
+
+------------------------------------------------------------------
+------------- Extendiendo tipoSuperficie en XML ------------------
+------------------------------------------------------------------
+
+INSERT INTO Registros (
+    numero,
+    fecha,
+    tiempo,
+    posicion,
+    revision,
+    dificultad,
+    comentarios,
+    nombreVersion,
+    nombreSegmento,
+    idParticipante
+)
+VALUES (800, SYSDATE, 35, 1, XMLTYPE(
+'
+
+<!DOCTYPE revision [
+
+  <!ELEMENT revision (
+      seccionesDuras?,
+      seccionesFaciles?,
+      seccionesDescenso?
+  )>
+
+  <!ELEMENT seccionesDuras (seccion+)>
+  <!ELEMENT seccionesFaciles (seccion+)>
+  <!ELEMENT seccionesDescenso (seccion+)>
+
+  <!ELEMENT seccion (
+      kilometroInicial,
+      kilometroFinal,
+      velocidadPromedio,
+      velocidadMinima,
+      velocidadMaxima,
+      pulsacionesPromedio,
+      potenciaPromedio,
+      tipoSuperficie
+  )>
+
+  <!ELEMENT kilometroInicial (#PCDATA)>
+  <!ELEMENT kilometroFinal (#PCDATA)>
+
+  <!ELEMENT velocidadPromedio (#PCDATA)>
+  <!ELEMENT velocidadMinima (#PCDATA)>
+  <!ELEMENT velocidadMaxima (#PCDATA)>
+
+  <!ELEMENT pulsacionesPromedio (#PCDATA)>
+  <!ELEMENT potenciaPromedio (#PCDATA)>
+
+  <!ELEMENT tipoSuperficie EMPTY>
+
+  <!ATTLIST tipoSuperficie
+      estado (seca | mojada | gravilla | barro) #REQUIRED
+  >
+
+]>
+
+<revision>
+
+  <seccionesDescenso>
+
+    <seccion>
+
+      <kilometroInicial>20</kilometroInicial>
+      <kilometroFinal>25</kilometroFinal>
+
+      <velocidadPromedio>55</velocidadPromedio>
+      <velocidadMinima>40</velocidadMinima>
+      <velocidadMaxima>75</velocidadMaxima>
+
+      <pulsacionesPromedio>130</pulsacionesPromedio>
+
+      <potenciaPromedio>210</potenciaPromedio>
+
+      <tipoSuperficie estado="mojada"/>
+
+    </seccion>
+
+  </seccionesDescenso>
+
+</revision>
+
+'
+), 3, 'Registro con superficie mojada', 'V1', 'S1', 1);
+
+----------------------------------------------------------
+--------------------- Consulta ---------------------------
+----------------------------------------------------------
+
+----- Consultar segmentos realizados sobre superficies mojadas
+SELECT nombreVersion, nombreSegmento, EXTRACTVALUE( revision,
+        '/revision/seccionesDescenso/seccion/tipoSuperficie/@estado'
+    ) AS tipoSuperficie
+
+FROM Registros
+WHERE EXISTSNODE( revision, '/revision//tipoSuperficie[@estado="mojada"]') = 1;

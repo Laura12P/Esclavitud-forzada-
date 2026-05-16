@@ -1,0 +1,77 @@
+<!DOCTYPE revision [
+
+  <!ELEMENT revision (
+      seccionesDuras?,
+      seccionesFaciles?,
+      seccionesDescenso?
+  )>
+
+  <!ELEMENT seccionesDuras (seccion+)>
+  <!ELEMENT seccionesFaciles (seccion+)>
+  <!ELEMENT seccionesDescenso (seccion+)>
+
+  <!ELEMENT seccion (
+      kilometroInicial,
+      kilometroFinal,
+      velocidadPromedio,
+      velocidadMinima,
+      velocidadMaxima,
+      pulsacionesPromedio,
+      potenciaPromedio,
+      tipoSuperficie
+  )>
+
+  <!ELEMENT kilometroInicial (#PCDATA)>
+  <!ELEMENT kilometroFinal (#PCDATA)>
+
+  <!ELEMENT velocidadPromedio (#PCDATA)>
+  <!ELEMENT velocidadMinima (#PCDATA)>
+  <!ELEMENT velocidadMaxima (#PCDATA)>
+
+  <!ELEMENT pulsacionesPromedio (#PCDATA)>
+  <!ELEMENT potenciaPromedio (#PCDATA)>
+
+  <!ELEMENT tipoSuperficie EMPTY>
+
+  <!ATTLIST tipoSuperficie
+      estado (seca | mojada | gravilla | barro) #REQUIRED
+  >
+
+]>
+
+----- Ejemplo Correcto -------
+
+<revision>
+  <seccionesDescenso>
+    <seccion>
+
+      <kilometroInicial>20</kilometroInicial>
+      <kilometroFinal>25</kilometroFinal>
+
+      <velocidadPromedio>55</velocidadPromedio>
+      <velocidadMinima>40</velocidadMinima>
+      <velocidadMaxima>75</velocidadMaxima>
+
+      <pulsacionesPromedio>130</pulsacionesPromedio>
+
+      <potenciaPromedio>210</potenciaPromedio>
+
+      <tipoSuperficie estado="mojada"/>
+
+    </seccion>
+  </seccionesDescenso>
+</revision>
+
+---- Ejemplo Incorrecto ------
+<revision>
+  <seccionesDescenso>
+  
+    <seccion>
+      <kilometroInicial>20</kilometroInicial>
+      <velocidadPromedio>55</velocidadPromedio>
+      <velocidadMinima>40</velocidadMinima>
+      <pulsacionesPromedio>130</pulsacionesPromedio>
+    </seccion>
+    
+  </seccionesDescenso>
+</revision>
