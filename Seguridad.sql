@@ -1,5 +1,8 @@
 ------------------------------------------------------------------------
 ---------------------------- Seguridad ---------------------------------
+-- Orden: Estructura y Restricciones -> Restricciones de Integridad
+--        -> Indices y Vistas -> Componentes -> Seguridad
+-- Requiere vistas de Indices y Vistas.sql
 ------------------------------------------------------------------------
 
 ----------------------------------------------------------

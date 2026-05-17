@@ -1,5 +1,8 @@
 --------------------------------------------------------------
 ---------------------- Componentes ---------------------------
+-- Orden: Estructura y Restricciones -> Restricciones de Integridad
+--        -> Indices y Vistas -> Componentes -> Seguridad
+-- No depende de paquetes de Seguridad.sql
 --------------------------------------------------------------
 
 -----------------------------------------------------------
@@ -469,12 +472,17 @@ CREATE OR REPLACE PACKAGE BODY PA_RECOMENDACION AS
     ) AS
     BEGIN
         OPEN p_cursor FOR
-            SELECT r.idRecomendacion, r.mensajeRecomendacion,
-                   r.tipoRecomendacion, r.fechaRecomendacion,
-                   c.tituloCancion, u.nombreUsuario
+            SELECT r.idRecomendacion,
+                   r.mensajeRecomendacion,
+                   r.tipoRecomendacion,
+                   r.fechaRecomendacion,
+                   c.tituloCancion,
+                   q.nombreUsuario
             FROM   Recomendacion r
-            LEFT JOIN Cancion  c ON r.idCancion = c.idCancion
-            LEFT JOIN Usuario  u ON r.idUsuarioRecomendador = u.idUsuario
+            LEFT JOIN Cancion c ON r.idCancion = c.idCancion
+            LEFT JOIN QuienMasRecomienda q
+                ON q.idUsuario = r.idUsuarioRecomendador
+               AND q.idUsuarioDestino = r.idUsuarioDestino
             WHERE  r.idUsuarioDestino = p_idDestino
             ORDER BY r.fechaRecomendacion DESC;
     END consultar_recomendaciones;
@@ -612,10 +620,15 @@ CREATE OR REPLACE PACKAGE BODY PA_CONFIGURACION_USUARIO AS
         p_notificaciones OUT ConfiguracionUsuario.notificacionesActivas%TYPE
     ) AS
     BEGIN
-        SELECT perfilPublico, quienPuedeSeguir, quienVeHistorial,
+        SELECT perfilPublico, quienVeHistorial,
                quienVePublicaciones, notificacionesActivas
-        INTO p_perfilPublico, p_quienPuedeSeguir, p_quienVeHistorial,
+        INTO p_perfilPublico, p_quienVeHistorial,
              p_quienVePublicaciones, p_notificaciones
+        FROM vista_ConfiguracionUsuario
+        WHERE idUsuario = p_idUsuario;
+
+        SELECT quienPuedeSeguir
+        INTO p_quienPuedeSeguir
         FROM ConfiguracionUsuario
         WHERE idUsuario = p_idUsuario;
     END consultar_configuracion;
@@ -646,12 +659,13 @@ CREATE OR REPLACE PACKAGE BODY PA_CONFIGURACION_USUARIO AS
     ) AS
     BEGIN
         OPEN p_cursor FOR
-            SELECT ln.idBloqueo, u.nombreUsuario,
-                   ln.fechaBloqueo, ln.motivoBloqueo
-            FROM ListaNegra ln
-            JOIN Usuario u ON ln.idUsuarioBloqueado = u.idUsuario
-            WHERE ln.idUsuario = p_idUsuario
-            ORDER BY ln.fechaBloqueo DESC;
+            SELECT idUsuarioBloqueado,
+                   nombreUsuario,
+                   fechaBloqueo,
+                   motivoBloqueo
+            FROM UsuariosBloqueados
+            WHERE idUsuario = p_idUsuario
+            ORDER BY fechaBloqueo DESC;
     END consultar_bloqueados;
 
 END PA_CONFIGURACION_USUARIO;
@@ -665,11 +679,14 @@ CREATE OR REPLACE PACKAGE BODY PA_REPORTES_SANCIONES AS
     ) AS
     BEGIN
         OPEN p_cursor FOR
-            SELECT r.idReporte, u.nombreUsuario AS reportado,
-                   r.motivoReporte, r.descripcionReporte,
-                   r.fechaReporte, r.estadoReporte
-            FROM Reporte r
-            JOIN Usuario u ON r.idUsuarioReportado = u.idUsuario
+            SELECT t.idReporte,
+                   t.nombreUsuario AS reportado,
+                   r.motivoReporte,
+                   r.descripcionReporte,
+                   r.fechaReporte,
+                   r.estadoReporte
+            FROM TopUsuariosReportados t
+            JOIN Reporte r ON r.idReporte = t.idReporte
             WHERE r.estadoReporte = 'pendiente'
             ORDER BY r.fechaReporte DESC;
     END consultar_reportes_pendientes;
@@ -679,13 +696,12 @@ CREATE OR REPLACE PACKAGE BODY PA_REPORTES_SANCIONES AS
     ) AS
     BEGIN
         OPEN p_cursor FOR
-            SELECT s.idSancion, s.tipoSancion,
-                   s.fechaInicio, s.fechaFin,
-                   s.motivoSancion, u.nombreUsuario AS sancionado
-            FROM Sancion s
-            JOIN Usuario u ON s.idUsuarioReportado = u.idUsuario
-            WHERE s.fechaFin > SYSDATE OR s.fechaFin IS NULL
-            ORDER BY s.fechaInicio DESC;
+            SELECT tipoSancion,
+                   fechaInicio,
+                   fechaFin,
+                   motivoSancion
+            FROM SancionesActivas
+            ORDER BY fechaInicio DESC;
     END consultar_sanciones_activas;
 
     PROCEDURE consultar_reportes_por_usuario(
@@ -694,11 +710,14 @@ CREATE OR REPLACE PACKAGE BODY PA_REPORTES_SANCIONES AS
     ) AS
     BEGIN
         OPEN p_cursor FOR
-            SELECT r.idReporte, r.motivoReporte,
-                   r.descripcionReporte, r.fechaReporte,
+            SELECT t.idReporte,
+                   r.motivoReporte,
+                   r.descripcionReporte,
+                   r.fechaReporte,
                    r.estadoReporte
-            FROM Reporte r
-            WHERE r.idUsuarioReportado = p_idUsuario
+            FROM TopUsuariosReportados t
+            JOIN Reporte r ON r.idReporte = t.idReporte
+            WHERE t.idUsuarioReportado = p_idUsuario
             ORDER BY r.fechaReporte DESC;
     END consultar_reportes_por_usuario;
 
@@ -878,31 +897,26 @@ EXCEPTION
 END;
 /
 
--- READ
+-- READ: Configuración (vista_ConfiguracionUsuario)
 DECLARE
-    v_nombre Usuario.nombreUsuario%TYPE;
-    v_correo Usuario.correo%TYPE;
-    v_descripcion Usuario.descripcionPerfil%TYPE;
+    v_perfil ConfiguracionUsuario.perfilPublico%TYPE;
+    v_seguir ConfiguracionUsuario.quienPuedeSeguir%TYPE;
+    v_historial ConfiguracionUsuario.quienVeHistorial%TYPE;
+    v_publicaciones ConfiguracionUsuario.quienVePublicaciones%TYPE;
+    v_notif ConfiguracionUsuario.notificacionesActivas%TYPE;
 BEGIN
-    PA_USUARIO.consultar_usuario(
+    PA_CONFIGURACION_USUARIO.consultar_configuracion(
         p_idUsuario => 1,
-        p_nombreUsuario => v_nombre,
-        p_correo => v_correo,
-        p_descripcionPerfil => v_descripcion
+        p_perfilPublico => v_perfil,
+        p_quienPuedeSeguir => v_seguir,
+        p_quienVeHistorial => v_historial,
+        p_quienVePublicaciones => v_publicaciones,
+        p_notificaciones => v_notif
     );
-    DBMS_OUTPUT.PUT_LINE('OK - consultar_usuario: ' || v_nombre || ' | ' || v_correo);
+    DBMS_OUTPUT.PUT_LINE('OK - consultar_configuracion: perfil=' || v_perfil);
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('ERROR - consultar_usuario: ');
-END;
-/
--- DELETE
-BEGIN
-    PA_USUARIO.eliminar_usuario(p_idUsuario => 1);
-    DBMS_OUTPUT.PUT_LINE('OK - eliminar_usuario');
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('ERROR - eliminar_usuario: ');
+        DBMS_OUTPUT.PUT_LINE('ERROR - consultar_configuracion: ');
 END;
 /
 
@@ -911,7 +925,7 @@ END;
 BEGIN
     PA_RECOMENDACION.insertar_recomendacion(
         p_mensaje => 'Te va a encantar esta canción',
-        p_tipo => 'cancion',
+        p_tipo => 'directa',
         p_idUsuario => 1,
         p_idCancion => 1,
         p_idDestino => 2
@@ -988,7 +1002,7 @@ END;
 BEGIN
     PA_BUSQUEDAS_USUARIO.insertar_filtro(
         p_exito => 1,
-        p_periodo => '2022-2023',
+        p_periodo => TO_DATE('2022-01-01', 'YYYY-MM-DD'),
         p_idGenero => 1,
         p_idArtista => 1,
         p_idRegistro => 1,
@@ -1051,7 +1065,7 @@ BEGIN
     PA_CONFIGURACION_USUARIO.insertar_configuracion(
         p_perfilPublico => 1,
         p_quienPuedeSeguir => 'todos',
-        p_quienVeHistorial => 'amigos',
+        p_quienVeHistorial => 'seguidores',
         p_quienVePublicaciones => 'todos',
         p_notificaciones => 1,
         p_idUsuario => 1
@@ -1120,7 +1134,7 @@ END;
 -- READ: Bloqueados (cursor)
 DECLARE
     v_cursor SYS_REFCURSOR;
-    v_idBloqueo ListaNegra.idBloqueo%TYPE;
+    v_idBloqueado Usuario.idUsuario%TYPE;
     v_nombre Usuario.nombreUsuario%TYPE;
     v_fecha ListaNegra.fechaBloqueo%TYPE;
     v_motivo ListaNegra.motivoBloqueo%TYPE;
@@ -1130,7 +1144,7 @@ BEGIN
         p_cursor => v_cursor
     );
     LOOP
-        FETCH v_cursor INTO v_idBloqueo, v_nombre, v_fecha, v_motivo;
+        FETCH v_cursor INTO v_idBloqueado, v_nombre, v_fecha, v_motivo;
         EXIT WHEN v_cursor%NOTFOUND;
         DBMS_OUTPUT.PUT_LINE('  Bloqueado: ' || v_nombre || ' | Motivo: ' || v_motivo);
     END LOOP;
@@ -1179,18 +1193,16 @@ END;
 -- READ: Sanciones activas
 DECLARE
     v_cursor SYS_REFCURSOR;
-    v_idSancion Sancion.idSancion%TYPE;
     v_tipo Sancion.tipoSancion%TYPE;
     v_inicio Sancion.fechaInicio%TYPE;
     v_fin Sancion.fechaFin%TYPE;
     v_motivo Sancion.motivoSancion%TYPE;
-    v_sancionado Usuario.nombreUsuario%TYPE;
 BEGIN
     PA_REPORTES_SANCIONES.consultar_sanciones_activas(p_cursor => v_cursor);
     LOOP
-        FETCH v_cursor INTO v_idSancion, v_tipo, v_inicio, v_fin, v_motivo, v_sancionado;
+        FETCH v_cursor INTO v_tipo, v_inicio, v_fin, v_motivo;
         EXIT WHEN v_cursor%NOTFOUND;
-        DBMS_OUTPUT.PUT_LINE('  Sancion: ' || v_sancionado || ' | ' || v_tipo);
+        DBMS_OUTPUT.PUT_LINE('  Sancion: ' || v_tipo || ' | ' || v_motivo);
     END LOOP;
     CLOSE v_cursor;
     DBMS_OUTPUT.PUT_LINE('OK - consultar_sanciones_activas');
@@ -1336,7 +1348,7 @@ END;
 BEGIN
     PA_PERFIL_USUARIO.agregar_streaming(
         p_idUsuario => 1,
-        p_plataforma => 'Spotify'
+        p_plataforma => 'spotify'
     );
     DBMS_OUTPUT.PUT_LINE('OK - agregar_streaming');
 EXCEPTION
@@ -1349,7 +1361,7 @@ END;
 BEGIN
     PA_PERFIL_USUARIO.eliminar_streaming(
         p_idUsuario => 1,
-        p_plataforma => 'Spotify'
+        p_plataforma => 'spotify'
     );
     DBMS_OUTPUT.PUT_LINE('OK - eliminar_streaming');
 EXCEPTION
@@ -1380,7 +1392,7 @@ BEGIN
         p_idUsuario => 1,
         p_fechaFin => ADD_MONTHS(SYSDATE, 3),
         p_estado => 'activa',
-        p_tipo => 'premium_anual'
+        p_tipo => 'premium'
     );
     DBMS_OUTPUT.PUT_LINE('OK - actualizar_membresia');
 EXCEPTION
@@ -1724,7 +1736,7 @@ END;
 BEGIN
     PA_RECOMENDACION.insertar_recomendacion(
         p_mensaje => 'Recomendacion sin origen',
-        p_tipo => 'cancion',
+        p_tipo => 'directa',
         p_idUsuario => 99999,
         p_idCancion => 1,
         p_idDestino => 2
@@ -1740,7 +1752,7 @@ END;
 BEGIN
     PA_RECOMENDACION.insertar_recomendacion(
         p_mensaje => 'Recomendacion sin cancion',
-        p_tipo => 'cancion',
+        p_tipo => 'directa',
         p_idUsuario => 1,
         p_idCancion => 99999,
         p_idDestino => 2
@@ -1802,7 +1814,7 @@ END;
 BEGIN
     PA_BUSQUEDAS_USUARIO.insertar_filtro(
         p_exito => 1,
-        p_periodo => '2022-2023',
+        p_periodo => NULL,
         p_idGenero => 1,
         p_idArtista => 1,
         p_idRegistro => 1,

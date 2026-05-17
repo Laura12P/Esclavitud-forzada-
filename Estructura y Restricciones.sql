@@ -278,9 +278,6 @@ ALTER TABLE Recomendacion
 ALTER TABLE ConfiguracionUsuario
     ADD CONSTRAINT pk_configuracion_usuario PRIMARY KEY (idConfiguracion, idUsuario);
 
-ALTER TABLE ConfiguracionUsuario
-    ADD CONSTRAINT uk_config_usuario UNIQUE (idUsuario);
-
 ALTER TABLE ListaNegra
     ADD CONSTRAINT pk_lista_negra PRIMARY KEY (idBloqueo);
 
