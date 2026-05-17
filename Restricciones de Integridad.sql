@@ -621,59 +621,7 @@ INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistr
     VALUES (0, 'adminUsers',  'admin.trg@moodheard.test', 'Admin1234', SYSDATE, 'Administrador');
 INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
     VALUES (0, 'testUser4444',  'test5.trg@moodheard.test', 'Test5678x', SYSDATE, NULL);
- 
-DECLARE
-    v_id_usuario NUMBER;
-BEGIN
-    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-        VALUES (0, 'usu_basico_trg1', 'basico1.trg@moodheard.test', 'Password1', SYSDATE, NULL)
-        RETURNING idUsuario INTO v_id_usuario;
-    INSERT INTO UsuarioBasico (idUsuario) VALUES (v_id_usuario);
-END;
-/
 
-DECLARE
-    v_id_usuario NUMBER;
-BEGIN
-    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-        VALUES (0, 'usu_basico_trg2', 'basico2.trg@moodheard.test', 'Password1', SYSDATE, NULL)
-        RETURNING idUsuario INTO v_id_usuario;
-    INSERT INTO UsuarioBasico (idUsuario) VALUES (v_id_usuario);
-END;
-/
-
-DECLARE
-    v_id_usuario NUMBER;
-BEGIN
-    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-        VALUES (0, 'usu_memb_trg1', 'memb1.trg@moodheard.test', 'Password1', SYSDATE, NULL)
-        RETURNING idUsuario INTO v_id_usuario;
-    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
-        VALUES (v_id_usuario, TO_DATE('2024-01-01','YYYY-MM-DD'), NULL, 'activa', 'premium');
-END;
-/
-
-DECLARE
-    v_id_usuario NUMBER;
-BEGIN
-    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-        VALUES (0, 'usu_memb_trg2', 'memb2.trg@moodheard.test', 'Password1', SYSDATE, NULL)
-        RETURNING idUsuario INTO v_id_usuario;
-    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
-        VALUES (v_id_usuario, TO_DATE('2023-06-01','YYYY-MM-DD'), TO_DATE('2024-06-01','YYYY-MM-DD'), 'inactiva', 'basica');
-END;
-/
-
-DECLARE
-    v_id_usuario NUMBER;
-BEGIN
-    INSERT INTO Usuario (idUsuario, nombreUsuario, correo, contraseña, fechaRegistro, descripcionPerfil)
-        VALUES (0, 'usu_memb_trg3', 'memb3.trg@moodheard.test', 'Password1', SYSDATE, NULL)
-        RETURNING idUsuario INTO v_id_usuario;
-    INSERT INTO UsuarioMembresia (idUsuario, fechaInicioMembresia, fechaFinMembresia, estadoMembresia, tipoMembresia)
-        VALUES (v_id_usuario, TO_DATE('2024-03-01','YYYY-MM-DD'), NULL, 'activa', 'familia');
-END;
-/
 
 INSERT INTO Usuario_Streaming VALUES (1, 'spotify');
 INSERT INTO Usuario_Streaming VALUES (2, 'apple_music');
